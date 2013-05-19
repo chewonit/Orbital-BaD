@@ -875,6 +875,9 @@ h5,
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-rendering: optimizelegibility;
   font-family: 'Chewy', cursive;
+  font-family: 'Trade Winds', cursive;
+  font-family: 'Sirin Stencil', cursive;
+  font-family: 'Righteous', cursive;
   font-weight: 400;
   /*
 	if you're going to use webfonts, be sure to check your weights
@@ -923,6 +926,9 @@ h5,
   line-height: 2.09em;
   text-transform: uppercase;
   letter-spacing: 2px;
+}
+#logo {
+  font-family: 'Trade Winds', cursive !important;
 }
 /*********************
 06. HEADER SYTLES
