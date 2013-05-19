@@ -1,0 +1,6 @@
+[13-May-2013 22:53:44] PHP Parse error:  syntax error, unexpected ',' in /home/chewdegr/public_html/orbital/wp-content/plugins/listeningto/insertmodule.php on line 2
+[13-May-2013 22:55:38] PHP Parse error:  syntax error, unexpected '?' in /home/chewdegr/public_html/orbital/wp-content/plugins/listeningto/insertmodule.php on line 2
+[13-May-2013 23:00:45] PHP Fatal error:  Call to a member function insert() on a non-object in /home/chewdegr/public_html/orbital/wp-content/plugins/listeningto/insertmodule.php on line 6
+[13-May-2013 23:01:22] PHP Fatal error:  Call to undefined function get_header() in /home/chewdegr/public_html/orbital/wp-content/plugins/listeningto/insertmodule.php on line 1
+[13-May-2013 23:01:39] PHP Fatal error:  Call to a member function insert() on a non-object in /home/chewdegr/public_html/orbital/wp-content/plugins/listeningto/insertmodule.php on line 7
+[13-May-2013 23:03:44] PHP Fatal error:  Call to undefined function get_currentuserinfo() in /home/chewdegr/public_html/orbital/wp-content/plugins/listeningto/insertmodule.php on line 9
