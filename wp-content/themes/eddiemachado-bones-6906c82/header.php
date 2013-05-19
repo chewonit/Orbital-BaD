@@ -87,7 +87,7 @@
 							</li>
 						</ul>
 					</div>
-					HELLOWORLD
+					
 				</div> <!-- end #inner-header -->
 
 			</header> <!-- end header -->
