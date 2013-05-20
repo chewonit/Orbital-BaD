@@ -96,10 +96,16 @@ if (!isset($wpdb->moduledata)) {
 										});
 									}
 									$("#addPreq").click(function(){
-										$("#preq-list").append( "<div class='preq-style preq-tag' modid='' style='float:left;'>" + $("#modulepreq2_txt").val() + "</div>" );
-										$("#modulepreq2_txt").val("");
-									
-										popluatePreqList("");
+										if ( $("#modulepreq2_txt").val() == "") {
+											$("#modulepreq2_txt").focus();
+											$("#modulepreq2_txt").effect('shake');
+										} else {
+											$("#preq-list").append( "<div class='preq-style preq-tag"+id+"' modid='' style='float:left;'>" + $("#modulepreq2_txt").val() + "</div>" );
+											$("#modulepreq2_txt").val("");
+											//$("#addPreq").attr("disabled", true);
+										
+											popluatePreqList("");
+										}
 									});
 									$(document).on("click", ".preq-style", function(e) {
 										id = $(this).attr('modid');
