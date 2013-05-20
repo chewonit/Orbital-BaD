@@ -186,6 +186,16 @@ if (!isset($wpdb->moduledata)) {
 										});
 										$("#loading").fadeIn();
 									});
+									$(document).on("click", ".modulecheckbox", function(e) {
+										id = $(this).attr('modid');
+										if($(this).prop('checked')) { // just checked, module just taken
+											// Update database istaken to 1
+											// update color of module-item in the list
+										} else {	// just unchecked, module has been dropped
+											// Update database istaken to 0
+											// update color of module-item in the list
+										}
+									});
 								});
 								</script>
 								<form name="input" action="<?php echo the_permalink() ?>" method="get">
@@ -251,6 +261,13 @@ if (!isset($wpdb->moduledata)) {
 											.'<form id="editform' . $a->id . '" action="JavaScript:editMod('. $a->id .')">'
 											.'<input id="editid_txt" type="text" name="editid_txt" style="display:none;" value="' . $a->id . '">'
 											.'<input id="editbutton" type="submit" value="Edit" style="display:inline">'
+											.'</form></div>';
+											
+										// Module Taken button
+										echo '<div style="float:right">'
+											.'<form id="takenform' . $a->id . '" action="JavaScript:alert('. $a->id .')">'
+											.'<input id="takenid_txt" type="text" name="takenid_txt" style="display:none;" value="' . $a->id . '">'
+											.'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline">&nbsp;'
 											.'</form></div>';
 										
 										echo '</div>';
