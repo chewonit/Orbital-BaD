@@ -40,7 +40,7 @@ if (!isset($wpdb->moduledata)) {
 								
 								<p>
 								<script>
-								function insertModule(str) {
+								function manageModule(str) {
 									var xmlhttp;
 									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
 										xmlhttp=new XMLHttpRequest();
@@ -71,7 +71,7 @@ if (!isset($wpdb->moduledata)) {
 								}
 								function deleteMod(id) {
 									$("#module-list").slideUp(200, function(){
-										insertModule("op=delete&ur=<?php echo $username ?>&id="+id);
+										manageModule("op=delete&ur=<?php echo $username ?>&id="+id);
 									});
 									$("#loading").fadeIn();
 								};
@@ -115,7 +115,7 @@ if (!isset($wpdb->moduledata)) {
 									$("#insertModBtn").click(function(){
 										if ($("#modulecode_txt").val().length != 0 && $("#modulename_txt").val().length != 0) {
 											$("#module-list").slideUp(200, function(){
-												insertModule("ur=<?php echo $username ?>&mc="+$("#modulecode_txt").val()
+												manageModule("ur=<?php echo $username ?>&mc="+$("#modulecode_txt").val()
 													+"&op=insert"
 													+"&mn="+$("#modulename_txt").val()
 													+"&preq="+$("#modulepreq_txt").val());
@@ -178,7 +178,7 @@ if (!isset($wpdb->moduledata)) {
 											return;
 										}
 										$("#module-list").slideUp(200, function(){
-											insertModule("ur=<?php echo $username ?>&mc="+$("#editmodulecode_txt"+id).val()
+											manageModule("ur=<?php echo $username ?>&mc="+$("#editmodulecode_txt"+id).val()
 												+"&op=update"
 												+"&mn="+$("#editmodulename_txt"+id).val()
 												+"&preq="+$("#modulepreq_txt"+id).val()
