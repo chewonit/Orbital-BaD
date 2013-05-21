@@ -25,40 +25,157 @@ function my_ofset($text){
     return strlen($m[0]);
 }
 if($operation == "checkModule") { 
-	$wpdb->update( 
-		'wp_moduledata',
-		array(
-			'isTaken' => $checkValue
-		),
-		array( 'id' => $id ),
-		array( 
-			'%d'
-		), 
-		array( '%d' ) 
-	);
 	if($checkValue) {
-		echo(1); // Module has been marked as Taken.
+		$wpdb->update( 
+			'wp_moduledata',
+			array(
+				'isTaken' => $checkValue
+			),
+			array( 'id' => $id ),
+			array( 
+				'%d'
+			), 
+			array( '%d' ) 
+		);
+		$output = $id . ",istaken"; // Module has been marked as Taken.
+		
+		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
+		$modulecodeArr = $wpdb->get_results( $query );
+		$modulecode = $modulecodeArr[0]->modulecode;
+		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$modulecode}'" );
+		$rawmodule = $wpdb->get_results( $query );
+		
+		foreach($rawmodule as $a) {
+			//echo $a->modulecode;
+			$flag = true;
+			$arr = explode(",", $a->modulepreq);
+			foreach($arr as $module) {
+				if (!($wpdb->get_var( "SELECT $wpdb->moduledata.istaken FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ))) {
+					$flag = false;
+					break;
+				}
+			}
+			// This module is now unlocked
+			if($flag) {
+				$wpdb->update( 
+					'wp_moduledata',
+					array(
+						'status' => 'available'
+					),
+					array( 'id' => $a->id ),
+					array( 
+						'%s'
+					), 
+					array( '%d' ) 
+				);
+				$output = $output . "," . $a->id . ",available";
+			}
+		}
 	} else {
-		echo(0); // Module has been marked as Not Taken.
+		$flag = true;
+		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
+		$modulecodeArr = $wpdb->get_results( $query );
+		$modulecode = $modulecodeArr[0]->modulecode;
+		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$modulecode}'" );
+		$rawmodule = $wpdb->get_results( $query );
+		
+		foreach($rawmodule as $a) {
+			// This array contains the modules that has the target module as prerequisite
+			if ($a->istaken) {
+				$flag = false;
+				break;
+			}
+		}
+		if($flag) {
+			$wpdb->update( 
+				'wp_moduledata',
+				array(
+					'isTaken' => $checkValue
+				),
+				array( 'id' => $id ),
+				array( 
+					'%d'
+				), 
+				array( '%d' ) 
+			);
+		
+			$output = $id . ",available"; // Module has been marked as Not Taken.
+			
+			foreach($rawmodule as $a) {
+				$wpdb->update( 
+					'wp_moduledata',
+					array(
+						'status' => 'locked'
+					),
+					array( 'id' => $a->id ),
+					array( 
+						'%s'
+					), 
+					array( '%d' ) 
+				);
+				$output = $output . "," . $a->id . ",locked";
+			}
+		} else {
+			$output = "1=" . $id;
+		}
 	}
+	
+	echo $output;
 	return;
 }
 if($operation == "delete") { 
-	$wpdb->query( 
-		$wpdb->prepare( 
-			"
-			DELETE FROM $wpdb->moduledata
-			WHERE id = %d
-			",
-				$id
-        )
-	);
-	$output = '<div style="color:red">Module Deleted.</div>';
+	$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
+	$modulecodeArr = $wpdb->get_results( $query );
+	$modulecode = $modulecodeArr[0]->modulecode;
+	$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$modulecode}'" );
+	$rawmodule = $wpdb->get_results( $query );
+	if(count($rawmodule) == 0) {
+		$wpdb->query( 
+			$wpdb->prepare( 
+				"
+				DELETE FROM $wpdb->moduledata
+				WHERE id = %d
+				",
+					$id
+			)
+		);
+		$output = '<div style="color:red">Module Deleted.</div>';
+	} else {
+		$output = '<div style="color:red">';
+		for ($i = 0; $i < count($rawmodule); $i++) {
+			if($i == (count($rawmodule)-1)) {
+				$output = $output . $rawmodule[$i]->modulecode . " ";
+				break;
+			}
+			$output = $output . $rawmodule[$i]->modulecode . ", ";
+		}
+		$output = $output . "has " . $modulecode . " as a prerequisite!<br />Unable to delete module.</div>";
+	}
 }
 if($operation == "insert") {
 	$level = $modulecode[my_ofset($modulecode)];
 	$dupe = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}'" );
-	if($dupe == 0) {
+	$flag = "noModule";
+	$status = "available";
+	if($modulepreq == null) {
+		$status="available";
+	} else {		
+		$arr = explode(",", $modulepreq);
+		foreach($arr as $module) {
+			if ($wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ) == "0") {
+				// Prerequisite Not in the user module pool
+				$flag = $module;
+				break;
+			} else {
+				if (!($wpdb->get_var( "SELECT $wpdb->moduledata.istaken FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ))) {
+					// if prerequisite module is not taken yet
+					$status = "locked";
+					break;
+				}
+			}
+		}
+	}
+	if($dupe == 0 && $flag=="noModule") {
 		$wpdb->insert( 
 			'wp_moduledata', 
 			array( 
@@ -66,17 +183,21 @@ if($operation == "insert") {
 				'modulecode' => strtoupper($modulecode),
 				'modulename' => ucwords(strtolower($modulename)),
 				'modulepreq' => strtoupper($modulepreq),
-				'level' => $level
+				'level' => $level,
+				'status' => $status
 			), 
 			array( 
 				'%s', 
 				'%s',
 				'%s',
 				'%s',
-				'%d'
+				'%d',
+				'%s'
 			) 
 		);
 		$output = '<div style="color:red">Module Added.</div>';
+	} else if($flag != "noModule") {
+		$output = '<div style="color:red">Cannot find prerequisite module!</div><div style="color:red">Create module '. $flag .' first!</div>';
 	} else {
 		$output = '<div style="color:red">A entry with the same Module Code already exist!</div><div style="color:red">No changes mande</div>';
 	}
@@ -131,6 +252,8 @@ foreach($rawmodule as $a) {
 										
 	if($a->istaken) {
 		echo '<div id="module-item'. $a->id .'" class="module-item module-istaken"><div>';
+	} else if($a->status=="available"){
+		echo '<div id="module-item'. $a->id .'" class="module-item module-available"><div>';
 	} else {
 		echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
 	}
@@ -160,8 +283,10 @@ foreach($rawmodule as $a) {
 		.'<input id="takenid_txt" type="text" name="takenid_txt" style="display:none;" value="' . $a->id . '">';
 	if($a->istaken) {
 		echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline" checked>&nbsp;';
-	} else {
+	} else if($a->status=="available"){
 		echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline">&nbsp;';
+	} else {
+		echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline" disabled="true">&nbsp;';
 	}
 	echo '</form></div>';
 	

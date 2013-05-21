@@ -79,12 +79,23 @@ if (!isset($wpdb->moduledata)) {
 									}
 									xmlhttp.onreadystatechange=function() {
 										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-											//alert(xmlhttp.responseText);
-											if(xmlhttp.responseText==1) {
-												$("#module-item"+id).addClass("module-istaken");
+											//alert((xmlhttp.responseText).substring(0,2));
+											if((xmlhttp.responseText).substring(0,2)=="1=") {
+												$modid = (xmlhttp.responseText).substring(2);
+												$("#takencheckbox"+$modid).prop("checked", true);
+												alert("A module having this as a prerequisite has already been taken! Unable to drop module.");
 											} else {
-												$("#module-item"+id).removeClass("module-istaken");
+												var arr = xmlhttp.responseText.split(",");
+												for(i=0; i<arr.length; i+=2) {
+													$("#module-item"+arr[i]).removeClass("module-istaken module-available module-locked").addClass("module-"+arr[i+1]);
+													if(arr[i+1] == "locked") {
+														$("#takencheckbox"+arr[i]).attr("disabled", true);
+													} else {
+														$("#takencheckbox"+arr[i]).attr("disabled", false);
+													}
+												}
 											}
+											//alert((xmlhttp.responseText).substring(1));	
 											$("#loading-overlay").fadeOut(200, function(){
 												$("#loading-overlay").removeClass("loading-overlay");
 											});
@@ -127,7 +138,7 @@ if (!isset($wpdb->moduledata)) {
 											$("#modulepreq2_txt").focus();
 											$("#modulepreq2_txt").effect('shake');
 										} else {
-											$("#preq-list").append( "<div class='preq-style preq-tag"+id+"' modid='' style='float:left;'>" + $("#modulepreq2_txt").val() + "</div>" );
+											$("#preq-list").append( "<div class='preq-style preq-tag' modid='' style='float:left;'>" + $("#modulepreq2_txt").val() + "</div>" );
 											$("#modulepreq2_txt").val("");
 											//$("#addPreq").attr("disabled", true);
 										
@@ -287,6 +298,8 @@ if (!isset($wpdb->moduledata)) {
 										
 										if($a->istaken) {
 											echo '<div id="module-item'. $a->id .'" class="module-item module-istaken"><div>';
+										} else if($a->status=="available"){
+											echo '<div id="module-item'. $a->id .'" class="module-item module-available"><div>';
 										} else {
 											echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
 										}
@@ -316,8 +329,10 @@ if (!isset($wpdb->moduledata)) {
 											.'<input id="takenid_txt" type="text" name="takenid_txt" style="display:none;" value="' . $a->id . '">';
 										if($a->istaken) {
 											echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline" checked>&nbsp;';
-										} else {
+										} else if($a->status=="available"){
 											echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline">&nbsp;';
+										} else {
+											echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline" disabled="true">&nbsp;';
 										}
 										echo '</form></div>';
 										

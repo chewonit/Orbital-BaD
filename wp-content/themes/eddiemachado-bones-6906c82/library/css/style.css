@@ -1913,7 +1913,7 @@ be set to display none.
 	margin: 5px;
 	padding: 5px;
 	border-radius: 5px;
-	background-color:#E6E6E6;
+	background-color: #FFBF00;
 }
 
 .page-title {
@@ -1975,5 +1975,11 @@ nav {
 *** Module Color Codings ***
 ***************************/
 .module-istaken {
+	background-color: #E6E6E6 !important;
+}
+.module-available {
 	background-color: #79FF4C !important;
+}
+.module-locked {
+	background-color: #FFBF00 !important;
 }
