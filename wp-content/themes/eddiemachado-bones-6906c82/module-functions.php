@@ -16,12 +16,32 @@ if(isset($_GET["mc"])) { $modulecode=$_GET["mc"]; }
 if(isset($_GET["mn"])) { $modulename=$_GET["mn"]; }
 if(isset($_GET["preq"])) { $modulepreq=$_GET["preq"]; }
 if(isset($_GET["id"])) { $id=$_GET["id"]; }
+if(isset($_GET["cv"])) { $checkValue=$_GET["cv"]; }
 $modulecode = strtoupper($modulecode);
 $output = "";
 ob_start();
 function my_ofset($text){
     preg_match('/^\D*(?=\d)/', $text, $m);
     return strlen($m[0]);
+}
+if($operation == "checkModule") { 
+	$wpdb->update( 
+		'wp_moduledata',
+		array(
+			'isTaken' => $checkValue
+		),
+		array( 'id' => $id ),
+		array( 
+			'%d'
+		), 
+		array( '%d' ) 
+	);
+	if($checkValue) {
+		echo(1); // Module has been marked as Taken.
+	} else {
+		echo(0); // Module has been marked as Not Taken.
+	}
+	return;
 }
 if($operation == "delete") { 
 	$wpdb->query( 
@@ -108,8 +128,12 @@ foreach($rawmodule as $a) {
 	} else {
 		$preq = $a->modulepreq;
 	}
-	
-	echo '<div class="module-item"><div>';
+										
+	if($a->istaken) {
+		echo '<div id="module-item'. $a->id .'" class="module-item module-istaken"><div>';
+	} else {
+		echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
+	}
 	print_r('<div style="float:left">' . $a->modulecode . ": " . $a->modulename . "</div>");
 	
 	// -- Manage module buttons container
@@ -129,6 +153,17 @@ foreach($rawmodule as $a) {
 		.'<input id="editid_txt" type="text" name="editid_txt" style="display:none;" value="' . $a->id . '">'
 		.'<input id="editbutton" type="submit" value="Edit" style="display:inline">'
 		.'</form></div>';
+		
+	// Module Taken button
+	echo '<div style="float:right">'
+		.'<form id="takenform' . $a->id . '" action="JavaScript:alert('. $a->id .')">'
+		.'<input id="takenid_txt" type="text" name="takenid_txt" style="display:none;" value="' . $a->id . '">';
+	if($a->istaken) {
+		echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline" checked>&nbsp;';
+	} else {
+		echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline">&nbsp;';
+	}
+	echo '</form></div>';
 	
 	echo '</div>';
 	// -- End of Manage module buttons container

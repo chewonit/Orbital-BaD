@@ -69,6 +69,33 @@ if (!isset($wpdb->moduledata)) {
 									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions/?"+str,true);
 									xmlhttp.send();
 								}
+								function checkModule(str, id) {
+									var xmlhttp;
+									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											//alert(xmlhttp.responseText);
+											if(xmlhttp.responseText==1) {
+												$("#module-item"+id).addClass("module-istaken");
+											} else {
+												$("#module-item"+id).removeClass("module-istaken");
+											}
+											$("#loading-overlay").fadeOut(200, function(){
+												$("#loading-overlay").removeClass("loading-overlay");
+											});
+											$("#loading-overlay-message").fadeOut(200, function(){
+												$("#loading-overlay-message").removeClass("loading-overlay-message");
+											});
+										}
+									}
+									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions/?"+str,true);
+									xmlhttp.send();
+								}
 								function deleteMod(id) {
 									$("#module-list").slideUp(200, function(){
 										manageModule("op=delete&ur=<?php echo $username ?>&id="+id);
@@ -190,9 +217,25 @@ if (!isset($wpdb->moduledata)) {
 										id = $(this).attr('modid');
 										if($(this).prop('checked')) { // just checked, module just taken
 											// Update database istaken to 1
+											checkModule("ur=<?php echo $username ?>&mc="
+												+"&op=checkModule"
+												+"&cv=1"
+												+"&id="+id, id);
+											$("#loading-overlay").fadeIn();
+											$("#loading-overlay").addClass("loading-overlay");
+											$("#loading-overlay-message").fadeIn();
+											$("#loading-overlay-message").addClass("loading-overlay-message");
 											// update color of module-item in the list
 										} else {	// just unchecked, module has been dropped
 											// Update database istaken to 0
+											checkModule("ur=<?php echo $username ?>&mc="
+												+"&op=checkModule"
+												+"&cv=0"
+												+"&id="+id, id);
+											$("#loading-overlay").fadeIn(100);
+											$("#loading-overlay").addClass("loading-overlay");
+											$("#loading-overlay-message").fadeIn(100);
+											$("#loading-overlay-message").addClass("loading-overlay-message");
 											// update color of module-item in the list
 										}
 									});
@@ -242,7 +285,11 @@ if (!isset($wpdb->moduledata)) {
 										    $preq = $a->modulepreq;
 										}
 										
-										echo '<div class="module-item"><div>';
+										if($a->istaken) {
+											echo '<div id="module-item'. $a->id .'" class="module-item module-istaken"><div>';
+										} else {
+											echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
+										}
 										print_r('<div style="float:left">' . $a->modulecode . ": " . $a->modulename . "</div>");
 										
 										// -- Manage module buttons container
@@ -266,9 +313,13 @@ if (!isset($wpdb->moduledata)) {
 										// Module Taken button
 										echo '<div style="float:right">'
 											.'<form id="takenform' . $a->id . '" action="JavaScript:alert('. $a->id .')">'
-											.'<input id="takenid_txt" type="text" name="takenid_txt" style="display:none;" value="' . $a->id . '">'
-											.'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline">&nbsp;'
-											.'</form></div>';
+											.'<input id="takenid_txt" type="text" name="takenid_txt" style="display:none;" value="' . $a->id . '">';
+										if($a->istaken) {
+											echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline" checked>&nbsp;';
+										} else {
+											echo 'Module Taken: <input id="takencheckbox' . $a->id . '" modid="' . $a->id . '" class="modulecheckbox" type="checkbox" value="Module Taken" style="display:inline">&nbsp;';
+										}
+										echo '</form></div>';
 										
 										echo '</div>';
 										// -- End of Manage module buttons container
