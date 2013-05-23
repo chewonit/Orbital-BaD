@@ -40,6 +40,11 @@ if (!isset($wpdb->moduledata)) {
 								
 								<p>
 								<script>
+								/*
+									Function to Manage Modules
+									Insert, Delete, Update
+									Takes in the get parameters to send to php script.
+								*/
 								function manageModule(str) {
 									var xmlhttp;
 									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -70,6 +75,10 @@ if (!isset($wpdb->moduledata)) {
 									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions/?"+str,true);
 									xmlhttp.send();
 								}
+								/*
+									Function to mark modules as taken or not taken
+									Takes in the get parameters to send to php script.
+								*/
 								function checkModule(str, id) {
 									var xmlhttp;
 									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -96,7 +105,7 @@ if (!isset($wpdb->moduledata)) {
 													}
 												}
 											}
-											//alert((xmlhttp.responseText).substring(1));	
+											// Clears the loading overlay animation
 											$("#loading-overlay").fadeOut(200, function(){
 												$("#loading-overlay").removeClass("loading-overlay");
 											});
@@ -108,50 +117,85 @@ if (!isset($wpdb->moduledata)) {
 									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions/?"+str,true);
 									xmlhttp.send();
 								}
+								/*
+									Function is called when the delete button on the module item is clicked.
+								*/
 								function deleteMod(id) {
+									// Slides up the whole list of modules and calls for manage module function
+									// operation = delete
 									$("#module-list").slideUp(200, function(){
 										manageModule("op=delete&ur=<?php echo $username ?>&id="+id);
 									});
 									$("#loading").fadeIn();
 								};
+								/*
+									Function toggle the visibility of the edit plane embeded in the module item.
+								*/
 								function editMod(id) {
 									$("#edit"+id).slideToggle();
 								};
 								$(document).ready(function(){
+									/*
+										Function consolidates all the prerequisite 
+										tags and puts them into a string.
+										Stores prerequisite string in designated textbox.
+									*/
 									function popluatePreqList(id) {
+										// gets all of the graphical prerequisite tags
 										var elems = $(".preq-tag"+id).nextAll(), countPreq = elems.length;
 										var preqString = "";
+										// if no prerequisites
 										if($.trim($(".preq-tag"+id).text()).length == 0){
 											$("#modulepreq_txt"+id).val("");
 										}
+										// run through all the prerequisite tags and add
+										// each tag text to the storage string
 										$(".preq-tag"+id).each(function() {
 											if( countPreq != 0) {
 												preqString += $(this).html() + ",";
 											} else {
+												// this is the last tag to be accessed
 												preqString += $(this).html();
 												$("#modulepreq_txt"+id).val(preqString);
 											}
 											countPreq --;
 										});
 									}
+									/*
+										This button is the add prerequisite button
+										for the create new module form
+									*/
 									$("#addPreq").click(function(){
 										if ( $("#modulepreq2_txt").val() == "") {
+											// textbox empty
 											$("#modulepreq2_txt").focus();
 											$("#modulepreq2_txt").effect('shake');
 										} else {
+											// add the graphical prerequisite tag
 											$("#preq-list").append( "<div class='preq-style preq-tag' modid='' style='float:left;'>" + $("#modulepreq2_txt").val() + "</div>" );
 											$("#modulepreq2_txt").val("");
-											//$("#addPreq").attr("disabled", true);
-										
+											// execute function to update the prerequisite storage string
 											popluatePreqList("");
 										}
 									});
+									/*
+										Attach a click listener to each prerequisite tag.
+										As the tags are dynamically created by jquery
+										the 'on' function is need.
+									*/
 									$(document).on("click", ".preq-style", function(e) {
+										// get the embedded id on the tag and remove the tag
 										id = $(this).attr('modid');
 										$(this).remove();
+										// update the prerequisite storage string
 										popluatePreqList(id);
 									});
+									/*
+										Function to insert a new module
+										calls manage module function with operation=insert
+									*/
 									$("#insertModBtn").click(function(){
+										// check if required fields are met
 										if ($("#modulecode_txt").val().length != 0 && $("#modulename_txt").val().length != 0) {
 											$("#module-list").slideUp(200, function(){
 												manageModule("ur=<?php echo $username ?>&mc="+$("#modulecode_txt").val()
@@ -165,8 +209,8 @@ if (!isset($wpdb->moduledata)) {
 													$("#modulepreq2_txt").val("");
 													$("#preq-list").html("");
 											});
-											
 										} else {
+											// form validation
 											if ($("#modulecode_txt").val().length == 0) {
 												$("#modulecode_txt").effect('shake');
 												$("#modulecode_txt").focus();
@@ -176,13 +220,23 @@ if (!isset($wpdb->moduledata)) {
 											}
 										}
 									});
+									/*
+										Function breaks the prerequisite string
+										and decodes it to populate the graphical
+										prerequisite tags.
+									*/
 									function populateEditPreq() {
+										// For each edit-box which is embedded in each module item.
 										$(".edit-box").each(function() {
+											// get the embedded id
 											var id;
 											id = $(this).attr('modid');
+											// if the module has prerequisites
 											if ($('#modulepreq_txt'+id).val() != "") {
+												// break and decode the prerequisite string separated by commas
 												var preqString = $('#modulepreq_txt'+id).val();
 												var arr = preqString.split(",");
+												// populate the graphical tags
 												for(i=0; i<arr.length; i++) {
 													$("#preq-list"+id).append( "<div class='preq-style preq-tag"+id+"' modid='"+id+"' style='float:left;'>" + arr[i] + "</div>" );
 												}
@@ -190,22 +244,33 @@ if (!isset($wpdb->moduledata)) {
 										});
 									}
 									populateEditPreq();
+									/*
+										Attach a click listener to each add prerequisite button in the edit module.
+										As the edit modules are dynamically created by jquery, the 'on' function is need.
+									*/
 									$(document).on("click", ".editaddpreqbtn", function(e) {
-									//$(".editaddpreqbtn").click(function() {
+										// get the embedded id
 										id = $(this).attr('modid');
 										if ( $("#modulepreq2_txt"+id).val() == "") {
+											// form validation
 											$("#modulepreq2_txt"+id).focus();
 											$("#modulepreq2_txt"+id).effect('shake');
 										} else {
+											// add the graphical prerequisite tag
 											$("#preq-list"+id).append( "<div class='preq-style preq-tag"+id+"' modid='"+id+"' style='float:left;'>" + $("#modulepreq2_txt"+id).val() + "</div>" );
 											$("#modulepreq2_txt"+id).val("");
-											//$("#addPreq").attr("disabled", true);
-										
+											// update the prerequisite storage string
 											popluatePreqList(id);
 										}
 									});
+									/*
+										Attach a click listener to each edit module button in the edit module.
+										As the edit modules are dynamically created by jquery, the 'on' function is need.
+									*/
 									$(document).on("click", ".editmodulebtn", function(e) {
+										// get the embedded id
 										id = $(this).attr('modid');
+										// form validation
 										if ( $("#editmodulecode_txt"+id).val() == "") {
 											$("#editmodulecode_txt"+id).focus();
 											$("#editmodulecode_txt"+id).effect('shake');
@@ -216,6 +281,7 @@ if (!isset($wpdb->moduledata)) {
 											$("#editmodulename_txt"+id).effect('shake');
 											return;
 										}
+										// slide up the whole module list and call manage module function to update module
 										$("#module-list").slideUp(200, function(){
 											manageModule("ur=<?php echo $username ?>&mc="+$("#editmodulecode_txt"+id).val()
 												+"&op=update"
@@ -225,7 +291,11 @@ if (!isset($wpdb->moduledata)) {
 										});
 										$("#loading").fadeIn();
 									});
+									/*
+										Attach a click listener to module taken checkbox.
+									*/
 									$(document).on("click", ".modulecheckbox", function(e) {
+										// get embedded id
 										id = $(this).attr('modid');
 										if($(this).prop('checked')) { // just checked, module just taken
 											// Update database istaken to 1
