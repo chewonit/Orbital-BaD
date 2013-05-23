@@ -35,15 +35,8 @@
                     <td class="lwa-submit-links">
                         <input name="rememberme" type="checkbox" class="lwa-rememberme" value="forever" /> <label><?php esc_html_e( 'Remember Me','login-with-ajax' ) ?></label>
                         <br />
-						<?php if( !empty($lwa_data['remember']) ): ?>
-						<a class="lwa-links-remember" href="<?php echo esc_attr(LoginWithAjax::$url_remember); ?>" title="<?php esc_attr_e('Password Lost and Found','login-with-ajax') ?>"><?php esc_attr_e('Lost your password?','login-with-ajax') ?></a>
-						<?php endif; ?>
-                        <?php if ( get_option('users_can_register') && !empty($lwa_data['registration']) ) : ?>
-						<br />
-						<a href="<?php echo esc_attr(LoginWithAjax::$url_register); ?>" class="lwa-links-register lwa-links-modal"><?php esc_html_e('Register','login-with-ajax') ?></a>
-                        <?php endif; ?>
                     </td>
-                </tr>
+                </tr>				<tr>					<td colspan="2">												<?php if( !empty($lwa_data['remember']) ): ?>						<a class="lwa-links-remember" href="<?php echo esc_attr(LoginWithAjax::$url_remember); ?>" title="<?php esc_attr_e('Password Lost and Found','login-with-ajax') ?>"><?php esc_attr_e('Lost your password?','login-with-ajax') ?></a>						<?php endif; ?>											<?php if ( get_option('users_can_register') && !empty($lwa_data['registration']) ) : ?>						<br />						<a href="<?php echo esc_attr(LoginWithAjax::$url_register); ?>" class="lwa-links-register lwa-links-modal"><?php esc_html_e('Register','login-with-ajax') ?></a>                        <?php endif; ?>					</td>				</tr>
             </table>
         </form>
         <?php if( !empty($lwa_data['remember']) ): ?>
@@ -75,7 +68,7 @@
 		<?php if( get_option('users_can_register') && !empty($lwa_data['registration']) ): ?>
 		<div class="lwa-register lwa-register-default lwa-modal" style="display:none;">
 			<h4><?php esc_html_e('Register For This Site','login-with-ajax') ?></h4>
-			<p><em class="lwa-register-tip"><?php esc_html_e('A password will be e-mailed to you.','login-with-ajax') ?></em></p>
+			<!--<p><em class="lwa-register-tip"><?php esc_html_e('A password will be e-mailed to you.','login-with-ajax') ?></em></p>-->
 			<form class="lwa-register-form" action="<?php echo esc_attr(LoginWithAjax::$url_register); ?>" method="post">
 				<span class="lwa-status"></span>
 				<p class="lwa-username">

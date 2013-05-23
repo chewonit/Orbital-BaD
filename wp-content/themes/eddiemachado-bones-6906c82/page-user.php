@@ -50,6 +50,7 @@ if (!isset($wpdb->moduledata)) {
 									}
 									xmlhttp.onreadystatechange=function() {
 										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											//alert(xmlhttp.responseText);
 											document.getElementById("module-list").innerHTML=xmlhttp.responseText;
 											$("#loading").fadeOut();
 											$("#module-list").slideDown();
@@ -83,7 +84,7 @@ if (!isset($wpdb->moduledata)) {
 											if((xmlhttp.responseText).substring(0,2)=="1=") {
 												$modid = (xmlhttp.responseText).substring(2);
 												$("#takencheckbox"+$modid).prop("checked", true);
-												alert("A module having this as a prerequisite has already been taken! Unable to drop module.");
+												alert("There exist a module that has this as a prerequisite has already been taken! Unable to drop target module.");
 											} else {
 												var arr = xmlhttp.responseText.split(",");
 												for(i=0; i<arr.length; i+=2) {

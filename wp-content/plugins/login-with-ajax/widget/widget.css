@@ -50,4 +50,4 @@ form.lwa-form, form.lwa-remember, div.lwa-register form { position:relative; }
 .lwa-template--modal .lwa-modal-box h4 { font-size:16px; margin:0px; padding:0px; }	
 .lwa-template--modal .lwa-modal-box .close { background:url(modal/close.png) 0px 0px no-repeat  !important; position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; border:none; padding:0px; margin:0px; }
 .lwa-template--modal .lwa-modal-box #wp-submit { display:block; clear:both; }
-*/
+*/.lwa-register-form p input {	display: block;}

@@ -155,7 +155,7 @@ if($operation == "delete") {
 if($operation == "insert") {
 	$level = $modulecode[my_ofset($modulecode)];
 	$dupe = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}'" );
-	$flag = "noModule";
+	$missingpreq = "noModule";
 	$status = "available";
 	if($modulepreq == null) {
 		$status="available";
@@ -164,7 +164,7 @@ if($operation == "insert") {
 		foreach($arr as $module) {
 			if ($wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ) == "0") {
 				// Prerequisite Not in the user module pool
-				$flag = $module;
+				$missingpreq = $module;
 				break;
 			} else {
 				if (!($wpdb->get_var( "SELECT $wpdb->moduledata.istaken FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ))) {
@@ -175,7 +175,7 @@ if($operation == "insert") {
 			}
 		}
 	}
-	if($dupe == 0 && $flag=="noModule") {
+	if($dupe == 0 && $missingpreq=="noModule") {
 		$wpdb->insert( 
 			'wp_moduledata', 
 			array( 
@@ -196,36 +196,97 @@ if($operation == "insert") {
 			) 
 		);
 		$output = '<div style="color:red">Module Added.</div>';
-	} else if($flag != "noModule") {
-		$output = '<div style="color:red">Cannot find prerequisite module!</div><div style="color:red">Create module '. $flag .' first!</div>';
+	} else if($missingpreq != "noModule") {
+		$output = '<div style="color:red">Cannot find prerequisite module!</div><div style="color:red">Create module '. $missingpreq .' first!</div>';
 	} else {
 		$output = '<div style="color:red">A entry with the same Module Code already exist!</div><div style="color:red">No changes mande</div>';
 	}
 }
 if($operation == "update") {
-	$level = $modulecode[my_ofset($modulecode)];
-	$dupe = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.id !={$id}" );
-	if($dupe == 0) {
-		$wpdb->update( 
-			'wp_moduledata',
-			array(
-				'modulecode' => $modulecode,
-				'modulename' => ucwords(strtolower($modulename)),
-				'modulepreq' => strtoupper($modulepreq),
-				'level' => $level
-			),
-			array( 'id' => $id ),
-			array( 
-				'%s',
-				'%s',
-				'%s',
-				'%d'
-			), 
-			array( '%d' ) 
-		);
-		$output = '<div style="color:red">Module Updated.</div>';
+
+	$modulecodeflag = false;
+	$missingpreq = "noModule";
+	$status = "available";
+	
+	$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
+	$modulecodeArr = $wpdb->get_results( $query );
+	$originalmodulecode = $modulecodeArr[0]->modulecode;
+	
+	if(strcasecmp($originalmodulecode, $modulecode)!=0) {
+		// Module code has been changed
+		// Check if there exist and module containing this as a prerequisite
+		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$originalmodulecode}'" );
+		$rawmodule = $wpdb->get_results( $query );
+		
+		if(count($rawmodule) != 0) {
+			$output = '<div style="color:red">';
+			for ($i = 0; $i < count($rawmodule); $i++) {
+				if($i == (count($rawmodule)-1)) {
+					$output = $output . $rawmodule[$i]->modulecode . " ";
+					break;
+				}
+				$output = $output . $rawmodule[$i]->modulecode . ", ";
+			}
+			$output = $output . "has " . $originalmodulecode . " as a prerequisite!<br />Unable to edit module.</div>";
+			$modulecodeflag = false;
+		} else {
+			// There is no module containing this as a prerequisite
+			// Safe to cahnge module name
+			$modulecodeflag = true;
+		}
 	} else {
-		$output = '<div style="color:red">A entry with the same Module Code already exist!</div><div style="color:red">No changes mande</div>';
+		// Module code has NOT been changed
+		$modulecodeflag = true;
+	}
+	
+	if($modulecodeflag) {
+		if($modulepreq != null) {
+			$arr = explode(",", $modulepreq);
+			foreach($arr as $module) {
+				if ($wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ) == "0") {
+					// Prerequisite Not in the user module pool
+					$missingpreq = $module;
+					break;
+				} else {
+					if (!($wpdb->get_var( "SELECT $wpdb->moduledata.istaken FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ))) {
+						// if prerequisite module is not taken yet
+						$status = "locked";
+						break;
+					}
+				}
+			}
+		} else {
+			$status="available";
+		}
+		
+		$level = $modulecode[my_ofset($modulecode)];
+		$dupe = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.id !={$id}" );
+		if($dupe == 0 && $missingpreq=="noModule") {
+			$wpdb->update( 
+				'wp_moduledata',
+				array(
+					'modulecode' => $modulecode,
+					'modulename' => ucwords(strtolower($modulename)),
+					'modulepreq' => strtoupper($modulepreq),
+					'level' => $level,
+					'status' => $status
+				),
+				array( 'id' => $id ),
+				array( 
+					'%s',
+					'%s',
+					'%s',
+					'%d',
+					'%s'
+				), 
+				array( '%d' ) 
+			);
+			$output = '<div style="color:red">Module Updated.</div>';
+		} else if($missingpreq != "noModule") {
+			$output = '<div style="color:red">Cannot find prerequisite module!</div><div style="color:red">Create module '. $missingpreq .' first!</div>';
+		} else {
+			$output = '<div style="color:red">A entry with the same Module Code already exist!</div><div style="color:red">No changes mande</div>';
+		}
 	}
 }
 ob_end_clean();
