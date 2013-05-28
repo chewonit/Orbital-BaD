@@ -37,6 +37,8 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 		<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 
+		<meta name="google-site-verification" content="175XpthK0RP-h2g_1EqM4ps2GrWWniI7MUJCUet40dc" />
+		
 		<!-- wordpress head functions -->
 		<?php wp_head(); ?>
 		<!-- end of wordpress head -->
