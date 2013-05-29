@@ -1953,6 +1953,8 @@ nav {
 	z-index: 99998;
 	opacity: 0.8;
 	position: fixed;
+	top: 0;
+	left: 0;
 }
 #loading-overlay-message {
 	display:none;
