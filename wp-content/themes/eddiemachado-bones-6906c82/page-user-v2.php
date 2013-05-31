@@ -374,6 +374,15 @@ if (!isset($wpdb->moduledata)) {
 											// update color of module-item in the list
 										}
 									});
+									
+									$("#sort_btn").click(function() {
+										// slide up the whole module list and call manage module function to sort module
+										$("#module-list").slideUp(200, function(){
+											manageModule("ur=<?php echo $username ?>&op=ordermodule"
+												+"&order="+$("#sortby").val().toLowerCase().replace(/ /g, ''));
+										});
+										$("#loading").fadeIn();
+									});
 								});
 								</script>
 								<form name="input" action="<?php echo the_permalink() ?>" method="get">
@@ -402,6 +411,24 @@ if (!isset($wpdb->moduledata)) {
 								</p>
 								
 								<?php
+									$moduleorder = "modulecode";
+									// Get Module Order Prefrence
+									if (!isset($wpdb->usermoduledata)) {
+										$wpdb->usermoduledata = $table_prefix . 'usermoduledata';
+									}
+									$check_pref_exist = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->usermoduledata WHERE $wpdb->usermoduledata.username='{$username}'" );
+									if($check_pref_exist != 0){
+										// Get module order preference
+										$query = $wpdb->prepare( "SELECT $wpdb->usermoduledata.moduleorder FROM $wpdb->usermoduledata WHERE $wpdb->usermoduledata.username='{$username}' ");
+										$rawresults = $wpdb->get_results( $query );
+										foreach($rawresults as $a) {
+											$moduleorder = $a->moduleorder;
+										}
+									}
+									if (!isset($wpdb->moduledata)) {
+										$wpdb->moduledata = $table_prefix . 'moduledata';
+									}
+								
 									echo '<div id="module-list">';
 									
 									// count the modules
@@ -409,7 +436,7 @@ if (!isset($wpdb->moduledata)) {
 									echo "<p>Total Module Count: {$user_count}</p>";
 									
 									// Retreive all modules tagged with this user
-									$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.modulecode" );
+									$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.{$moduleorder}" );
 									$rawmodule = $wpdb->get_results( $query );
 									
 									// populate the modules
@@ -532,6 +559,24 @@ if (!isset($wpdb->moduledata)) {
 						
 						<?php //get_sidebar(); ?>
 						<div id="sidebar1" class="sidebar threecol last clearfix" role="complementary">
+							<div class="widget">
+								<h4 class="widgettitle"><span class="lwa-title">Sort Modules</span></h4>
+								<div class="ui-widget">
+									<select id="combobox">
+										<?php
+										if ($moduleorder == "modulecode") {
+											echo '<option value="modulecode" selected>Module Code</option>'
+												.'<option value="modulename">Module Name</option>';
+										} else {
+											echo '<option value="modulecode">Module Code</option>'
+												.'<option value="modulename" selected>Module Name</option>';
+										}
+										
+										?>
+									</select>
+									<input type="button" id="sort_btn" value="Sort" />
+								</div>
+							</div>
 							<div class="widget">
 								<h4 class="widgettitle"><span class="lwa-title">Flush and Load Presets</span></h4>
 								<div>

@@ -37,6 +37,7 @@
 		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 		<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+		<script src="<?php echo get_template_directory_uri(); ?>/library/js/combobox.js"></script>
 
 		<meta name="google-site-verification" content="175XpthK0RP-h2g_1EqM4ps2GrWWniI7MUJCUet40dc" />
 		
@@ -81,8 +82,7 @@
 						});
 					});
 					$(function() {
-						$( "input[type=submit], input[type=button]" )
-							.button()
+						$( "input[type=submit], input[type=button]" ).button();
 					});
 					</script>
 					<nav role="navigation">

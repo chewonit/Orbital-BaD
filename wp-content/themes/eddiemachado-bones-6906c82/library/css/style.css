@@ -2012,3 +2012,13 @@ input.ui-button {
 .ui-widget {
 	font-size: 100% !important;
 }
+.custom-combobox-toggle {
+	top: 4px !important;
+	vertical-align:0 !important;
+}
+.custom-combobox input {
+	padding-left: 5px !important;
+}
+.custom-combobox-toggle span.ui-button-text {
+	padding: .6em !important;
+}

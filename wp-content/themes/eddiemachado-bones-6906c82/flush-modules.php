@@ -33,7 +33,6 @@ $wpdb->query(
 			$course
 	)
 );
-ob_end_clean();
 /*
 function my_ofset($text){
     preg_match('/^\D*(?=\d)/', $text, $m);
@@ -304,8 +303,37 @@ if($operation == "update") {
 		}
 	}
 }
-ob_end_clean();
 */
+// get user preference for module order
+if (!isset($wpdb->usermoduledata)) {
+	$wpdb->usermoduledata = $table_prefix . 'usermoduledata';
+}
+$check_pref_exist = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->usermoduledata WHERE $wpdb->usermoduledata.username='{$username}'" );
+if($check_pref_exist == 0){
+	// User Preference not found
+	// Create new entry
+	$wpdb->insert( 
+		'wp_usermoduledata', 
+		array( 
+			'username' => $username
+		), 
+		array( 
+			'%s'
+		) 
+	);
+} else {
+	// Get module order preference
+	$query = $wpdb->prepare( "SELECT $wpdb->usermoduledata.moduleorder FROM $wpdb->usermoduledata WHERE $wpdb->usermoduledata.username='{$username}' ");
+	$rawresults = $wpdb->get_results( $query );
+	foreach($rawresults as $a) {
+		$moduleorder = $a->moduleorder;
+	}
+}
+if (!isset($wpdb->moduledata)) {
+	$wpdb->moduledata = $table_prefix . 'moduledata';
+}
+ob_end_clean();
+
 echo $output;
 
 echo '<div id="module-list">';
@@ -315,7 +343,7 @@ $user_count = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpd
 echo "<p>Total Module Count: {$user_count}</p>";
 
 // Retreive all modules tagged with this user
-$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.modulecode" );
+$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.{$moduleorder}" );
 $rawmodule = $wpdb->get_results( $query );
 
 // populate the modules
