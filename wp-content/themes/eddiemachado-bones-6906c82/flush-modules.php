@@ -333,7 +333,15 @@ foreach($rawmodule as $a) {
 	} else {
 		echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
 	}
-	print_r('<div style="float:left">' . $a->modulecode . ": " . $a->modulename . "</div>");
+	echo '<div style="float:left">';
+	print_r('<div style="font-weight:bold;">' . $a->modulecode . ": " . $a->modulename . "</div>");
+	// More module details
+	echo '<div style="float:left; margin-right:10px;">Level: '. $a->level .'000</div>'
+		.'<div style="float:left">Prerequisite: '. $preq . '</div>';
+	echo '<div style="clear:both;"></div>';
+	echo '</div>';
+	
+	echo '<hr class="module-item-controls-bar" />';
 	
 	// -- Manage module buttons container
 	echo '<div style="float:right">';
@@ -370,11 +378,6 @@ foreach($rawmodule as $a) {
 	// -- End of Manage module buttons container
 
 	echo "<br style='clear:both;'/></div>";
-	
-	// More module details
-	echo '<div style="float:left; margin-right:10px;">Level: '. $a->level .'000</div>'
-		.'<div style="float:left">Prerequisite: '. $preq . '</div>';
-	echo '<div style="clear:both;"></div>';
 	
 	echo '<div class="edit-box" id="edit' . $a->id . '" modid="' . $a->id . '" style="margin: 10px; background-color:white; display:none;">'
 		.'<form name="input" action="'. get_permalink() .'" method="get">'

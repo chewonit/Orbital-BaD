@@ -1731,6 +1731,10 @@ you can add resource intensive styles.
   
   }
   /* end .footer-links */
+  
+  .module-item-controls-bar {
+	display: none !important;
+  }
 }
 /*
 DESKTOP
@@ -1906,7 +1910,7 @@ be set to display none.
 	margin: 0 10px;
 }
 .input-module-submit {
-	margin: 10px 10px;
+	padding: 10px 10px;
 	clear: both;
 }
 .module-item {
@@ -1973,6 +1977,19 @@ nav {
 	color: white;
 }
 
+.edit-box {
+	margin: 10px; 
+	padding: 5px;
+	background-color:white; 
+	display:none;
+	border-radius: 3px;
+}
+
+.module-item-controls-bar {
+	display: block;
+	clear: both;
+}
+
 /***************************
 *** Module Color Codings ***
 ***************************/
@@ -1984,4 +2001,14 @@ nav {
 }
 .module-locked {
 	background-color: #FFBF00 !important;
+}
+
+/**********************************
+*** JQuery UI CSS Modifications ***
+***********************************/
+input.ui-button {
+	padding: .1em .5em !important;
+}
+.ui-widget {
+	font-size: 100% !important;
 }
