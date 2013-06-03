@@ -1990,6 +1990,17 @@ nav {
 	clear: both;
 }
 
+/******************************
+*** Module Color Coding Key ***
+******************************/
+.module-colorcode {
+	float:left;
+	background-color:#FFBF00;
+	padding: 2px 8px;
+	margin: 5px;
+	border-radius: 4px;
+}
+
 /***************************
 *** Module Color Codings ***
 ***************************/

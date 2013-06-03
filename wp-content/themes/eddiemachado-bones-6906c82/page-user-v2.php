@@ -408,6 +408,12 @@ if (!isset($wpdb->moduledata)) {
 										<div id="testdiv"></div>
 									</div>
 								</form>
+								
+								<div class="module-colorcode" style="background-color:transparent; font-weight:bold;">Color coding key:</div>
+								<div class="module-colorcode module-istaken">Module Cleared</div>
+								<div class="module-colorcode module-available">Module Available</div>
+								<div class="module-colorcode">Module Locked</div>
+								<div style="clear:both"></div>
 								</p>
 								
 								<?php
@@ -526,7 +532,7 @@ if (!isset($wpdb->moduledata)) {
 									}
 									// -- End of module-list
 									echo '</div>';
-									echo '<center><div id="loading" style="display:none; background-image: url(\''. get_template_directory_uri() .'/library/images/loading.gif\'); width:150px; height:150px;"></div></center>';
+									echo '<center><div id="loading" style="display:none; position:relative !important; background-image: url(\''. get_template_directory_uri() .'/library/images/loading.gif\'); width:150px; height:150px;"></div></center>';
 								?>
 								
 								
