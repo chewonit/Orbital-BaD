@@ -2033,3 +2033,10 @@ input.ui-button {
 .custom-combobox-toggle span.ui-button-text {
 	padding: .6em !important;
 }
+
+/*************************************
+*** Qn and Ans Widget Logo Removal ***
+**************************************/
+.lp-qa-logo {
+	display: none !important;
+}
