@@ -12,7 +12,7 @@ if (!isset($wpdb->moduledata)) {
 }
 ?>
 <?php get_header(); ?>
-
+			
 			<div id="content">
 
 				<div id="inner-content" class="wrap clearfix">
@@ -187,6 +187,50 @@ if (!isset($wpdb->moduledata)) {
 								function editMod(id) {
 									$("#edit"+id).slideToggle();
 								};
+								/*
+									Function to create pop up when module name is click
+								*/
+								function modulepopup(modid) {
+									var xmlhttp;
+									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											$("#popup-overlay-innermessage").html('<div style="padding: 10px;">'+xmlhttp.responseText+'</div>');
+										}
+									}
+									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-popup/?ur=<?php echo $username ?>&mc="+modid,true);
+									xmlhttp.send();
+									
+									$("#popup-overlay").fadeIn();
+									$("#popup-overlay").addClass("popup-overlay");
+									$("#popup-overlay-container").fadeIn();
+									$("#popup-overlay-container").addClass("popup-overlay-container");
+									$("#popup-overlay-message").fadeIn();
+									$("#popup-overlay-message").addClass("popup-overlay-message");
+									
+									$("#popup-overlay-message").html('<div id="popup-overlay-innermessage"></div>'
+													+'<div style="padding: 0 10px 10px 10px; text-align:right;">'
+													+'<a href="Javascript:removemodulepopup()">close window</a></div>');
+								}
+								/*
+									Function to create pop up when module name is click
+								*/
+								function removemodulepopup() {
+									$("#popup-overlay").fadeOut(200, function(){
+										$("#popup-overlay").removeClass("popup-overlay");
+									});
+									$("#popup-overlay-container").fadeOut(200, function(){
+										$("#popup-overlay-container").removeClass("popup-overlay-container");
+									});
+									$("#popup-overlay-message").fadeOut(200, function(){
+										$("#popup-overlay-message").removeClass("popup-overlay-message");
+									});
+								}
 								$(document).ready(function(){
 									/*
 										Function consolidates all the prerequisite 
@@ -461,7 +505,8 @@ if (!isset($wpdb->moduledata)) {
 											echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
 										}
 										echo '<div style="float:left">';
-										print_r('<div style="font-weight:bold;">' . $a->modulecode . ": " . $a->modulename . "</div>");
+										print_r('<div style="font-weight:bold;"><a href="Javascript:modulepopup(\''. $a->modulecode .'\')">' 
+											. $a->modulecode . ": " . $a->modulename . "</a></div>");
 										// More module details
 										echo '<div style="float:left; margin-right:10px;">Level: '. $a->level .'000</div>'
 											.'<div style="float:left">Prerequisite: '. $preq . '</div>';

@@ -52,6 +52,8 @@
 
 	<body <?php body_class(); ?>>
 		<div id="loading-overlay"><div id="loading-overlay-message"><center><h1>loading</h1><img src="<?php echo get_template_directory_uri(); ?>/library/images/loader.gif"></center></div></div>
+		<div id="popup-overlay"></div>
+		<div id="popup-overlay-container"><div id="popup-overlay-message"><center><h1>loading</h1><img src="<?php echo get_template_directory_uri(); ?>/library/images/loader.gif"></center></div></div>
 		<div id="container">
 		
 			<header class="header" role="banner">
