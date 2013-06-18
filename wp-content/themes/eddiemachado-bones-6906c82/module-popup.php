@@ -18,28 +18,53 @@ if(isset($_GET["id"])) { $id=$_GET["id"]; }
 if(isset($_GET["cv"])) { $checkValue=$_GET["cv"]; }
 if(isset($_GET["order"])) { $ordermoduleselection=$_GET["order"]; }
 $modulecode = strtoupper($modulecode);
-$output = "";
+$output = '';
 
 $query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}'" );
 $rawmodule = $wpdb->get_results( $query );
 
 foreach($rawmodule as $a) {
+	$output .= '<div>' . $a->modulecode . ': ' . $a->modulename . '</div><br />';
+	$output .= '<div>Prerequisites</div>';
+
 	if($a->modulepreq==null) {
-		$output = "nill";
+		$output .= "<div>nill</div>";
 	} else {
 		//$preq = explode(",", $a->modulepreq);
 		$preq = $a->modulepreq;
 		$preq = explode(",", $preq);
 		$arrsize = count($preq);
 		
-		for ($i=0; $i<$arrsize; $i++) {
-			if($i == $arrsize-1) {
-				$output .= (string)$preq[$i];
-			} else {
-				$output .= (string)$preq[$i] . '<br />';
+		foreach($preq as $mod) {
+			$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$mod}' AND $wpdb->moduledata.username='{$username}'" );
+			$rawmod = $wpdb->get_results( $query );
+			
+			foreach($rawmod as $b) {
+				$output .= '<div>' . $b->modulecode . ': ' . $b->modulename . '</div>';
 			}
 		}
-		
+		/*
+		for ($i=0; $i<$arrsize; $i++) {
+			if($i == $arrsize-1) {
+				$output .= '<div>' . $preq[$i] . '</div>';
+			} else {
+				$output .= '<div>' . $preq[$i] . '</div>';
+			}
+		}
+		*/
+	}
+}
+
+$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulepreq REGEXP '{$modulecode}' AND $wpdb->moduledata.username='{$username}'" );
+$rawmodule = $wpdb->get_results( $query );
+
+$output .= '<br /><div>Post requisites</div>';
+
+if($rawmodule == null) {
+	$output .= "<div>nill</div>";
+} else {
+	foreach($rawmodule as $a) {
+		$output .= '<div>' . $a->modulecode . ': ' . $a->modulename . '</div>';
 	}
 }
 
