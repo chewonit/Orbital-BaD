@@ -200,7 +200,17 @@ if (!isset($wpdb->moduledata)) {
 									}
 									xmlhttp.onreadystatechange=function() {
 										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											
 											$("#popup-overlay-innermessage").html('<div style="padding: 10px;">'+xmlhttp.responseText+'</div>');
+											tempHeight = $("#popup-overlay-innermessage").height();
+											$("#popup-overlay-innermessage").css('display', 'none');
+											$("#popup-overlay-innermessage").height(0);
+											$("#popuploading").slideUp(200, function() {
+												$("#popup-overlay-innermessage").css('display', 'block');
+												$("#popup-overlay-innermessage").animate({ 
+													height: tempHeight+'px',
+												}, 1500 );
+											});
 										}
 									}
 									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-popup/?ur=<?php echo $username ?>&mc="+modid,true);
@@ -213,7 +223,8 @@ if (!isset($wpdb->moduledata)) {
 									$("#popup-overlay-message").fadeIn();
 									$("#popup-overlay-message").addClass("popup-overlay-message");
 									
-									$("#popup-overlay-message").html('<div id="popup-overlay-innermessage"></div>'
+									$("#popup-overlay-message").html('<div id="popuploading"><center><h1>loading</h1><img src="<?php echo get_template_directory_uri(); ?>/library/images/loader.gif"></center></div>'
+													+'<div id="popup-overlay-innermessage"></div>'
 													+'<div style="padding: 0 10px 10px 10px; text-align:right;">'
 													+'<a href="Javascript:removemodulepopup()">close window</a></div>');
 								}
@@ -631,7 +642,7 @@ if (!isset($wpdb->moduledata)) {
 							<div class="widget">
 								<h4 class="widgettitle"><span class="lwa-title">Flush and Load Presets</span></h4>
 								<div>
-									Clear all modules in account and push in a template structure of the selected course.
+									Clears all modules in account and loads in a template structure of the selected course.
 									<ul>
 										<li><a id="csrequirements_btn" href="JavaScript:flushModuleBtn('csrequirements')">Computer Science</a></li>
 									</ul>

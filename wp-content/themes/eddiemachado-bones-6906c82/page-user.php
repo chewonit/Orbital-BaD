@@ -486,7 +486,33 @@ if (!isset($wpdb->moduledata)) {
 
 						</div> <!-- end #main -->
 
-						<?php get_sidebar(); ?>
+						<?php //get_sidebar(); ?>
+						<div id="sidebar1" class="sidebar threecol last clearfix" role="complementary">
+							<div class="widget">
+								<h4 class="widgettitle"><span class="lwa-title">Flush and Load Presets</span></h4>
+								<div>
+									(beta)<br />
+									Clears all modules in account and loads in a template structure of the selected course.
+									<ul>
+										<li><a id="csrequirements_btn" href="JavaScript:flushModuleBtn('csrequirements')">Computer Science</a></li>
+									</ul>
+								</div>
+							</div>
+							<?php if ( is_active_sidebar( 'sidebar1' ) ) : ?>
+
+								<?php dynamic_sidebar( 'sidebar1' ); ?>
+
+							<?php else : ?>
+
+								<!-- This content shows up if there are no widgets defined in the backend. -->
+
+								<div class="alert alert-help">
+									<p><?php _e("Please activate some Widgets.", "bonestheme");  ?></p>
+								</div>
+
+							<?php endif; ?>
+
+						</div>
 
 				</div> <!-- end #inner-content -->
 
