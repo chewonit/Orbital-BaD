@@ -41,6 +41,25 @@ if (!isset($wpdb->moduledata)) {
 								<p>
 								<script>
 								/*
+									Function to Count Modules
+								*/
+								function countModules() {
+									var xmlhttp;
+									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											document.getElementById("widget-modulecount").innerHTML=xmlhttp.responseText;
+										}
+									}
+									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-count/?ur=<?php echo $username; ?>",true);
+									xmlhttp.send();
+								}
+								/*
 									Function to Manage Modules
 									Insert, Delete, Update
 									Takes in the get parameters to send to php script.
@@ -60,6 +79,7 @@ if (!isset($wpdb->moduledata)) {
 											$("#loading").fadeOut();
 											$("#module-list").slideDown();
 											filterModules();
+											countModules();
 											$(".edit-box").each(function() {
 												var id;
 												id = $(this).attr('modid');
@@ -141,6 +161,7 @@ if (!isset($wpdb->moduledata)) {
 											document.getElementById("module-list").innerHTML=xmlhttp.responseText;
 											$("#loading").fadeOut();
 											$("#module-list").slideDown();
+											countModules();
 											filterModules();
 											$(".edit-box").each(function() {
 												var id;
@@ -761,7 +782,7 @@ if (!isset($wpdb->moduledata)) {
 						<div id="sidebar1" class="sidebar threecol last clearfix" role="complementary">
 							<div class="widget">
 								<h4 class="widgettitle"><span class="lwa-title">Stats</span></h4>
-								<div>
+								<div id="widget-modulecount">
 									Total Module Count: <?php echo $user_count ?>
 								</div>
 							</div>
