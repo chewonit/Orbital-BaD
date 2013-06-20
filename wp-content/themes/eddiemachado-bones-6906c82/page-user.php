@@ -122,6 +122,56 @@ if (!isset($wpdb->moduledata)) {
 									xmlhttp.send();
 								}
 								/*
+									Function to Flush and Load template course structure
+									Takes in the get parameters to send to php script.
+								*/
+								function flushModules(str) {
+									var xmlhttp;
+									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											//alert(xmlhttp.responseText);
+											document.getElementById("module-list").innerHTML=xmlhttp.responseText;
+											$("#loading").fadeOut();
+											$("#module-list").slideDown();
+											filterModules();
+											$(".edit-box").each(function() {
+												var id;
+												id = $(this).attr('modid');
+												if ($('#modulepreq_txt'+id).val() != "") {
+													var preqString = $('#modulepreq_txt'+id).val();
+													var arr = preqString.split(",");
+													for(i=0; i<arr.length; i++) {
+														$("#preq-list"+id).append( "<div class='preq-style preq-tag"+id+"' modid='"+id+"' style='float:left;'>" + arr[i] + "</div>" );
+													}
+												}
+												$(function() {
+													$( "input[type=submit], input[type=button]" )
+														.button()
+												});
+											});
+										}
+									}
+									xmlhttp.open("GET","<?php echo get_home_url(); ?>/flush-modules/?"+str,true);
+									xmlhttp.send();
+								}
+								/*
+									Function is called when the flush module buttons are clicked.
+								*/
+								function flushModuleBtn(course) {
+									// Slides up the whole list of modules and calls for manage module function
+									// operation = delete
+									$("#module-list").slideUp(200, function(){
+										flushModules("ur=<?php echo $username ?>&course="+course);
+									});
+									$("#loading").fadeIn();
+								};
+								/*
 									Function is called when the delete button on the module item is clicked.
 								*/
 								function deleteMod(id) {
@@ -362,7 +412,7 @@ if (!isset($wpdb->moduledata)) {
 									
 									// count the modules
 									$user_count = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}'" );
-									echo "<p>Total Module Count: {$user_count}</p>";
+									//echo "<p>Total Module Count: {$user_count}</p>";
 									
 									// Retreive all modules tagged with this user
 									$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.modulecode" );
@@ -386,7 +436,7 @@ if (!isset($wpdb->moduledata)) {
 										echo '<div style="float:left">';
 										print_r('<div style="font-weight:bold;">' . $a->modulecode . ": " . $a->modulename . "</div>");
 										// More module details
-										echo '<div style="float:left; margin-right:10px;">Level: '. $a->level .'000</div>'
+										echo '<div style="float:left; margin-right:10px;" class="module-item-level-' . $a->level . '">Level: '. $a->level .'000</div>'
 											.'<div style="float:left">Prerequisite: '. $preq . '</div>';
 										echo '<div style="clear:both;"></div>';
 										echo '</div>';
@@ -488,6 +538,12 @@ if (!isset($wpdb->moduledata)) {
 
 						<?php //get_sidebar(); ?>
 						<div id="sidebar1" class="sidebar threecol last clearfix" role="complementary">
+							<div class="widget">
+								<h4 class="widgettitle"><span class="lwa-title">Stats</span></h4>
+								<div>
+									Total Module Count: <?php echo $user_count ?>
+								</div>
+							</div>
 							<div class="widget">
 								<h4 class="widgettitle"><span class="lwa-title">Flush and Load Presets</span></h4>
 								<div>
