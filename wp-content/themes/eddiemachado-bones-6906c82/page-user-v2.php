@@ -59,6 +59,7 @@ if (!isset($wpdb->moduledata)) {
 											document.getElementById("module-list").innerHTML=xmlhttp.responseText;
 											$("#loading").fadeOut();
 											$("#module-list").slideDown();
+											filterModules();
 											$(".edit-box").each(function() {
 												var id;
 												id = $(this).attr('modid');
@@ -109,6 +110,7 @@ if (!isset($wpdb->moduledata)) {
 													}
 												}
 											}
+											filterModules();
 											// Clears the loading overlay animation
 											$("#loading-overlay").fadeOut(200, function(){
 												$("#loading-overlay").removeClass("loading-overlay");
@@ -139,6 +141,7 @@ if (!isset($wpdb->moduledata)) {
 											document.getElementById("module-list").innerHTML=xmlhttp.responseText;
 											$("#loading").fadeOut();
 											$("#module-list").slideDown();
+											filterModules();
 											$(".edit-box").each(function() {
 												var id;
 												id = $(this).attr('modid');
@@ -240,6 +243,124 @@ if (!isset($wpdb->moduledata)) {
 									});
 									$("#popup-overlay-message").fadeOut(200, function(){
 										$("#popup-overlay-message").removeClass("popup-overlay-message");
+									});
+								}
+								/*
+									Function to filter the modules
+								*/
+								function filterModules() {
+									if( $('#checkbox-availablemodules').prop('checked')) {
+										$('.module-item.module-available').each(function(){
+											$(this).addClass('filtered-out');
+											$(this).slideUp();
+										});
+									} else {
+										$('.module-item.module-available').each(function(){
+											$(this).removeClass('filtered-out');
+											$(this).slideDown();
+										});
+									}
+									if( $('#checkbox-clearedmodules').prop('checked')) {
+										$('.module-item.module-istaken').each(function(){
+											$(this).addClass('filtered-out');
+											$(this).slideUp();
+										});
+									} else {
+										$('.module-item.module-istaken').each(function(){
+											$(this).removeClass('filtered-out');
+											$(this).slideDown();
+										});
+									}
+									if( $('#checkbox-lockedmodules').prop('checked')) {
+										$('.module-item').each(function(){
+											if( !($(this).hasClass('module-istaken') || $(this).hasClass('module-available')) ) {
+												$(this).addClass('filtered-out');
+												$(this).slideUp();
+											}
+										});
+									} else {
+										$('.module-item').each(function(){
+											if( !($(this).hasClass('module-istaken') || $(this).hasClass('module-available')) ) {
+												$(this).removeClass('filtered-out');
+												$(this).slideDown();
+											}
+										});
+									}
+									if( $('#checkbox-level1000').prop('checked')) {
+										$(".module-item-level-1").each(function(){
+											$(this).parent().parent().parent().addClass('leveled-out');
+											$(this).parent().parent().parent().slideUp();
+										});
+									} else {
+										$(".module-item-level-1").each(function(){
+											if( $(this).parent().parent().parent().hasClass('leveled-out')) {
+												$(this).parent().parent().parent().removeClass('leveled-out');
+												if( !($(this).parent().parent().parent().hasClass('filtered-out'))) {
+													$(this).parent().parent().parent().slideDown();
+												}
+											}
+										});
+									}
+									if( $('#checkbox-level2000').prop('checked')) {
+										$(".module-item-level-2").each(function(){
+											$(this).parent().parent().parent().addClass('leveled-out');
+											$(this).parent().parent().parent().slideUp();
+										});
+									} else {
+										$(".module-item-level-2").each(function(){
+											if( $(this).parent().parent().parent().hasClass('leveled-out')) {
+												$(this).parent().parent().parent().removeClass('leveled-out');
+												if( !($(this).parent().parent().parent().hasClass('filtered-out'))) {
+													$(this).parent().parent().parent().slideDown();
+												}
+											}
+										});
+									}
+									if( $('#checkbox-level3000').prop('checked')) {
+										$(".module-item-level-3").each(function(){
+											$(this).parent().parent().parent().addClass('leveled-out');
+											$(this).parent().parent().parent().slideUp();
+										});
+									} else {
+										$(".module-item-level-3").each(function(){
+											if( $(this).parent().parent().parent().hasClass('leveled-out')) {
+												$(this).parent().parent().parent().removeClass('leveled-out');
+												if( !($(this).parent().parent().parent().hasClass('filtered-out'))) {
+													$(this).parent().parent().parent().slideDown();
+												}
+											}
+										});
+									}
+									if( $('#checkbox-level4000').prop('checked')) {
+										$(".module-item-level-4").each(function(){
+											$(this).parent().parent().parent().addClass('leveled-out');
+											$(this).parent().parent().parent().slideUp();
+										});
+									} else {
+										$(".module-item-level-4").each(function(){
+											if( $(this).parent().parent().parent().hasClass('leveled-out')) {
+												$(this).parent().parent().parent().removeClass('leveled-out');
+												if( !($(this).parent().parent().parent().hasClass('filtered-out'))) {
+													$(this).parent().parent().parent().slideDown();
+												}
+											}
+										});
+									}
+								}
+								/*
+									Function to clear all the module filters
+								*/
+								function clearModuleFilters() {
+									$('#checkbox-availablemodules').prop('checked', false);
+									$('#checkbox-clearedmodules').prop('checked', false);
+									$('#checkbox-lockedmodules').prop('checked', false);
+									$('#checkbox-level1000').prop('checked', false);
+									$('#checkbox-level2000').prop('checked', false);
+									$('#checkbox-level3000').prop('checked', false);
+									$('#checkbox-level4000').prop('checked', false);
+									$(".module-item").each(function(){
+										$(this).removeClass('filtered-out leveled-out');
+										$(this).slideDown();
 									});
 								}
 								$(document).ready(function(){
@@ -429,7 +550,9 @@ if (!isset($wpdb->moduledata)) {
 											// update color of module-item in the list
 										}
 									});
-									
+									/*
+										Attach a click listener to the sort button dropdown list.
+									*/
 									$("#sort_btn").click(function() {
 										// slide up the whole module list and call manage module function to sort module
 										$("#module-list").slideUp(200, function(){
@@ -437,6 +560,18 @@ if (!isset($wpdb->moduledata)) {
 												+"&order="+$("#sortby").val().toLowerCase().replace(/ /g, ''));
 										});
 										$("#loading").fadeIn();
+									});
+									/*
+										Attach a click listener to the filter button.
+									*/
+									$("#filter_btn").click(function() {
+										filterModules();
+									});
+									/*
+										Attach a click listener to the filter button.
+									*/
+									$("#clearfilter_btn").click(function() {
+										clearModuleFilters();
 									});
 								});
 								</script>
@@ -485,6 +620,9 @@ if (!isset($wpdb->moduledata)) {
 										foreach($rawresults as $a) {
 											$moduleorder = $a->moduleorder;
 										}
+										if($moduleorder == 'availability') {
+											$moduleorder = "istaken,$wpdb->moduledata.status,$wpdb->moduledata.modulecode";
+										}
 									}
 									if (!isset($wpdb->moduledata)) {
 										$wpdb->moduledata = $table_prefix . 'moduledata';
@@ -494,7 +632,7 @@ if (!isset($wpdb->moduledata)) {
 									
 									// count the modules
 									$user_count = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}'" );
-									echo "<p>Total Module Count: {$user_count}</p>";
+									//echo "<p>Total Module Count: {$user_count}</p>";
 									
 									// Retreive all modules tagged with this user
 									$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.{$moduleorder}" );
@@ -519,7 +657,7 @@ if (!isset($wpdb->moduledata)) {
 										print_r('<div style="font-weight:bold;"><a href="Javascript:modulepopup(\''. $a->modulecode .'\')">' 
 											. $a->modulecode . ": " . $a->modulename . "</a></div>");
 										// More module details
-										echo '<div style="float:left; margin-right:10px;">Level: '. $a->level .'000</div>'
+										echo '<div style="float:left; margin-right:10px;" class="module-item-level-' . $a->level . '">Level: '. $a->level .'000</div>'
 											.'<div style="float:left">Prerequisite: '. $preq . '</div>';
 										echo '<div style="clear:both;"></div>';
 										echo '</div>';
@@ -622,21 +760,54 @@ if (!isset($wpdb->moduledata)) {
 						<?php //get_sidebar(); ?>
 						<div id="sidebar1" class="sidebar threecol last clearfix" role="complementary">
 							<div class="widget">
+								<h4 class="widgettitle"><span class="lwa-title">Stats</span></h4>
+								<div>
+									Total Module Count: <?php echo $user_count ?>
+								</div>
+							</div>
+							<div class="widget">
 								<h4 class="widgettitle"><span class="lwa-title">Sort Modules</span></h4>
 								<div class="ui-widget">
 									<select id="combobox">
 										<?php
-										if ($moduleorder == "modulecode") {
-											echo '<option value="modulecode" selected>Module Code</option>'
-												.'<option value="modulename">Module Name</option>';
-										} else {
-											echo '<option value="modulecode">Module Code</option>'
-												.'<option value="modulename" selected>Module Name</option>';
-										}
-										
+											switch ($moduleorder) {
+												case "modulecode":
+													echo '<option value="modulecode" selected>Module Code</option>'
+														.'<option value="modulename">Module Name</option>'
+														.'<option value="availability">Availability</option>';
+													break;
+												case "modulename":
+													echo '<option value="modulecode">Module Code</option>'
+														.'<option value="modulename" selected>Module Name</option>'
+														.'<option value="availability">Availability</option>';
+													break;
+												case "istaken,$wpdb->moduledata.status,$wpdb->moduledata.modulecode":
+													echo '<option value="modulecode">Module Code</option>'
+														.'<option value="modulename">Module Name</option>'
+														.'<option value="availability" selected>Availability</option>';
+													break;
+											}										
 										?>
 									</select>
 									<input type="button" id="sort_btn" value="Sort" />
+								</div>
+							</div>
+							<div class="widget">
+								<h4 class="widgettitle"><span class="lwa-title">Filter Out Modules</span></h4>
+								<div class="ui-widget">
+									<form id="filter-modules-form">
+										<h5 style="margin:0;">Module Availability</h5>
+										<input type="checkbox" id="checkbox-availablemodules"> Available Modules<br />
+										<input type="checkbox" id="checkbox-lockedmodules"> Locked Modules<br />
+										<input type="checkbox" id="checkbox-clearedmodules"> Cleared Modules<br />
+										<h5 style="margin:0;">Module Level</h5>
+										<input type="checkbox" id="checkbox-level1000"> Level 1000<br />
+										<input type="checkbox" id="checkbox-level2000"> Level 2000<br />
+										<input type="checkbox" id="checkbox-level3000"> Level 3000<br />
+										<input type="checkbox" id="checkbox-level4000"> Level 4000<br />
+										<input type="button" id="filter_btn" value="Filter" />
+										<input type="button" id="clearfilter_btn" value="Clear Filters" />
+									</form>
 								</div>
 							</div>
 							<div class="widget">

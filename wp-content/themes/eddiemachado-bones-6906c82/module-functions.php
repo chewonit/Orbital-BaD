@@ -350,11 +350,17 @@ if($check_pref_exist == 0){
 	foreach($rawresults as $a) {
 		$moduleorder = $a->moduleorder;
 	}
+	if($moduleorder == 'availability') {
+		$moduleorder = "istaken,$wpdb->moduledata.status,$wpdb->moduledata.modulecode";
+	}
 }
 if (!isset($wpdb->moduledata)) {
 	$wpdb->moduledata = $table_prefix . 'moduledata';
 }
 ob_end_clean();
+
+//echo $moduleorder;
+//$querystring = "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.{$moduleorder}";
 
 echo $output;
 
@@ -362,10 +368,11 @@ echo '<div id="module-list">';
 
 // count the modules
 $user_count = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}'" );
-echo "<p>Total Module Count: {$user_count}</p>";
+//echo "<p>Total Module Count: {$user_count}</p>";
 
 // Retreive all modules tagged with this user
 $query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.{$moduleorder}" );
+//$query = $wpdb->prepare( $querystring );
 $rawmodule = $wpdb->get_results( $query );
 
 // populate the modules
@@ -386,7 +393,7 @@ foreach($rawmodule as $a) {
 	echo '<div style="float:left">';
 	print_r('<div style="font-weight:bold;">' . $a->modulecode . ": " . $a->modulename . "</div>");
 	// More module details
-	echo '<div style="float:left; margin-right:10px;">Level: '. $a->level .'000</div>'
+	echo '<div style="float:left; margin-right:10px;" class="module-item-level-' . $a->level . '">Level: '. $a->level .'000</div>'
 		.'<div style="float:left">Prerequisite: '. $preq . '</div>';
 	echo '<div style="clear:both;"></div>';
 	echo '</div>';
