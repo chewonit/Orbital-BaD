@@ -2034,11 +2034,14 @@ input.ui-button {
 	padding: .6em !important;
 }
 
-/*************************************
-*** Qn and Ans Widget Logo Removal ***
-**************************************/
+/*****************
+*** Qn and Ans ***
+*****************/
 .lp-qa-logo {
 	display: none !important;
+}
+.faq li a {
+	text-decoration:none;
 }
 
 /**************************
@@ -2084,4 +2087,16 @@ input.ui-button {
 	background: #E6E6E6;
 	z-index: 99999;
 	border-radius: 4px;
+}
+.popup-module-container {
+	padding: 5px;
+	border-radius: 4px;
+	background-color: white;
+	margin: 7px;
+}
+.popup-module2-container {
+	padding: 5px;
+	border-radius: 4px;
+	background-color: #DBDBEA;
+	margin: 5px;
 }

@@ -24,8 +24,26 @@ $query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledat
 $rawmodule = $wpdb->get_results( $query );
 
 foreach($rawmodule as $a) {
-	$output .= '<div>' . $a->modulecode . ': ' . $a->modulename . '</div><br />';
-	$output .= '<div>Prerequisites</div>';
+	if($a->istaken) {
+		$statusremark = $a->modulecode . " has already been cleared.";
+		$classstyle = "";
+	} else {
+		switch ($a->status) {
+			case "available":
+				$statusremark = $a->modulecode . " is available to be taken.";
+				$classstyle = "module-available";
+				break;
+			case "locked":
+				$statusremark = "Prerequisites have not been cleared.";
+				$classstyle = "module-locked";
+				break;
+		}
+	}
+		
+	$output .= '<div class="popup-module-container '.$classstyle.'"><div><strong>' . $a->modulecode . ': ' . $a->modulename . '</strong></div>'
+		.'<div>level: ' . $a->level . '000</div>'
+		.'<div>Status: ' . $statusremark . '</div></div>';
+	$output .= '<div class="popup-module-container"><div><strong>Prerequisites</strong></div>';
 
 	if($a->modulepreq==null) {
 		$output .= "<div>nill</div>";
@@ -40,33 +58,62 @@ foreach($rawmodule as $a) {
 			$rawmod = $wpdb->get_results( $query );
 			
 			foreach($rawmod as $b) {
-				$output .= '<div>' . $b->modulecode . ': ' . $b->modulename . '</div>';
+				if($b->istaken) {
+					$statusremark = $b->modulecode . " has already been cleared.";
+					$classstyle = "";
+				} else {
+					switch ($b->status) {
+						case "available":
+							$statusremark = $b->modulecode . " is available to be taken.";
+							$classstyle = "module-available";
+							break;
+						case "locked":
+							$statusremark = "Prerequisites have not been cleared.";
+							$classstyle = "module-locked";
+							break;
+					}
+				}
+			
+				$output .= '<div class="popup-module2-container '.$classstyle.'"><div>' . $b->modulecode . ': ' . $b->modulename . '</div>'
+					.'<div>Status: ' . $statusremark . '</div>'
+					.'</div>';
 			}
 		}
-		/*
-		for ($i=0; $i<$arrsize; $i++) {
-			if($i == $arrsize-1) {
-				$output .= '<div>' . $preq[$i] . '</div>';
-			} else {
-				$output .= '<div>' . $preq[$i] . '</div>';
-			}
-		}
-		*/
 	}
+	$output .= "</div>";
 }
 
 $query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulepreq REGEXP '{$modulecode}' AND $wpdb->moduledata.username='{$username}'" );
 $rawmodule = $wpdb->get_results( $query );
 
-$output .= '<br /><div>Post requisites</div>';
+$output .= '<div class="popup-module-container"><div><strong>Post requisites</strong></div>';
 
 if($rawmodule == null) {
 	$output .= "<div>nill</div>";
 } else {
 	foreach($rawmodule as $a) {
-		$output .= '<div>' . $a->modulecode . ': ' . $a->modulename . '</div>';
+		if($a->istaken) {
+			$statusremark = $a->modulecode . " has already been cleared.";
+			$classstyle = "";
+		} else {
+			switch ($a->status) {
+				case "available":
+					$statusremark = $a->modulecode . " is available to be taken.";
+					$classstyle = "module-available";
+					break;
+				case "locked":
+					$statusremark = "Prerequisites have not been cleared.";
+					$classstyle = "module-locked";
+					break;
+			}
+		}
+	
+		$output .= '<div class="popup-module2-container '.$classstyle.'"><div>' . $a->modulecode . ': ' . $a->modulename . '</div>'
+			.'<div>Status: ' . $statusremark . '</div>'
+			.'</div>';
 	}
 }
+$output .= "</div>";
 
 echo $output;
 ?>

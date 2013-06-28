@@ -1,0 +1,1 @@
+<?php _e ('Thank you for your question \'$question$\'.  Unfortunately we did not use this because $message$.', 'faqtastic'); ?>
