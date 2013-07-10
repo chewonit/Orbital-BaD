@@ -38,8 +38,13 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 		<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 		<script src="<?php echo get_template_directory_uri(); ?>/library/js/combobox.js"></script>
+		
+		<script src="<?php echo get_template_directory_uri(); ?>/library/js/jquery.ui.touch-punch.min.js"></script>
+		
+		<link rel="shortcut icon" href="<?php echo get_template_directory_uri(); ?>/favicon.ico?v=2" />
 
 		<meta name="google-site-verification" content="175XpthK0RP-h2g_1EqM4ps2GrWWniI7MUJCUet40dc" />
+		
 		
 		<!-- wordpress head functions -->
 		<?php wp_head(); ?>
@@ -86,7 +91,26 @@
 					$(function() {
 						$( "input[type=submit], input[type=button]" ).button();
 					});
-					</script>
+					function iframeLoaded() {
+						//alert('iframe changed');
+						$('#loading-support').slideUp();
+						var iFrameID = document.getElementById('idIframe');
+						if(iFrameID) {
+							// here you can meke the height, I delete it first, then I make it again
+							iFrameID.height = "0";
+							newheight = iFrameID.contentWindow.document.body.offsetHeight + 30;
+							//iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight + "px";
+							$("#idIframe").animate({ 
+								height: newheight+'px',
+							}, 700 );
+						}   
+						
+					}
+					function socialLoginLoaded() {
+						alert('social login loaded');
+					}
+					</script> 
+					
 					<nav role="navigation">
 						<?php bones_main_nav(); ?>
 					</nav>

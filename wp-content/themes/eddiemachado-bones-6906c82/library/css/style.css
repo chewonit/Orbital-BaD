@@ -2100,3 +2100,41 @@ input.ui-button {
 	background-color: #DBDBEA;
 	margin: 5px;
 }
+.profile-link, .logout-link {
+	margin-bottom: 0 !important;
+}
+
+/*Facebook Like Box*/
+/*
+Make the Facebook Like box responsive (fluid width)
+https://developers.facebook.com/docs/reference/plugins/like-box/
+*/
+ 
+/* This element holds injected scripts inside iframes that in some cases may stretch layouts. So, we're just hiding it. */
+#fb-root {
+  display: none;
+}
+ 
+/* To fill the container and nothing else */
+.fb_iframe_widget, .fb_iframe_widget span, .fb_iframe_widget span iframe[style] {
+  width: 100% !important;
+}
+/* end facebook*/
+
+/*social CSS*/
+.lrshare_poweredby {
+	display: none;
+}
+/*end social CSS*/
+
+/* Plan Page */
+.module-plan-list { 
+	list-style-type: none; 
+	margin: 0; 
+	padding: 0; 
+	margin-top: 10px; 
+	background: #ECECFB;
+	border-radius: 8px;	
+	padding: 5px;
+}
+/* End of Plan Page */

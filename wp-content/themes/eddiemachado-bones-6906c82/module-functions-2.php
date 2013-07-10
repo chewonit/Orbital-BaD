@@ -1,6 +1,6 @@
 <?php
 /*
-Template Name: Module Functions
+Template Name: Module Functions 2
 */
 ?>
 <?php
@@ -22,6 +22,11 @@ if(isset($_GET["credit"])) { $modulecredit=$_GET["credit"]; }
 	else { $modulecredit=0; }
 if(isset($_GET["grade"])) { $modulegrade=$_GET["grade"]; }
 	else { $modulegrade=0; }
+if(isset($_GET["yr"])) { $modulereadyear=$_GET["yr"]; }
+	else { $modulereadyear=0; }
+if($modulereadyear==0) { $modulereadsem=1; }
+	else if(isset($_GET["sem"])) { $modulereadsem=$_GET["sem"]; }
+	else { $modulereadsem=1; }
 $modulecode = strtoupper($modulecode);
 $output = "";
 ob_start();
@@ -191,7 +196,9 @@ if($operation == "insert") {
 				'level' => $level,
 				'status' => $status,
 				'mc' => $modulecredit,
-				'grade' => $modulegrade
+				'grade' => $modulegrade,
+				'year' => $modulereadyear,
+				'sem' => $modulereadsem
 			), 
 			array( 
 				'%s', 
@@ -201,7 +208,9 @@ if($operation == "insert") {
 				'%d',
 				'%s',
 				'%d',
-				'%s'
+				'%d',
+				'%d',
+				'%d'
 			) 
 		);
 		$output = '<div style="color:red">Module Added.</div>';
@@ -278,7 +287,11 @@ if($operation == "update") {
 					'modulename' => ucwords(strtolower($modulename)),
 					'modulepreq' => strtoupper($modulepreq),
 					'level' => $level,
-					'status' => $status
+					'status' => $status,
+					'mc' => $modulecredit,
+					'grade' => $modulegrade,
+					'year' => $modulereadyear,
+					'sem' => $modulereadsem
 				),
 				array( 'id' => $id ),
 				array( 
@@ -286,7 +299,11 @@ if($operation == "update") {
 					'%s',
 					'%s',
 					'%d',
-					'%s'
+					'%s',
+					'%d',
+					'%d',
+					'%d',
+					'%d'
 				), 
 				array( '%d' ) 
 			);
@@ -399,7 +416,8 @@ foreach($rawmodule as $a) {
 		echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
 	}
 	echo '<div style="float:left">';
-	print_r('<div style="font-weight:bold;">' . $a->modulecode . ": " . $a->modulename . "</div>");
+	print_r('<div style="font-weight:bold;"><a href="Javascript:modulepopup(\''. $a->modulecode .'\')">' 
+		. $a->modulecode . ": " . $a->modulename . "</a></div>");
 	// More module details
 	echo '<div style="float:left; margin-right:10px;" class="module-item-level-' . $a->level . '">Level: '. $a->level .'000</div>'
 		.'<div style="float:left">Prerequisite: '. $preq . '</div>';
@@ -441,7 +459,7 @@ foreach($rawmodule as $a) {
 	
 	echo '</div>';
 	// -- End of Manage module buttons container
-
+									
 	echo "<br style='clear:both;'/></div>";
 	
 	echo '<div class="edit-box" id="edit' . $a->id . '" modid="' . $a->id . '">'
@@ -455,13 +473,85 @@ foreach($rawmodule as $a) {
 		.'<div class="input-module"><div>Module Prerequisite: </div>'
 		.'<div>'
 		.'<div style="float:left;"><input id="modulepreq2_txt' . $a->id . '" type="text" name="modulepreq2_txt' . $a->id . '"></div>'
-		.'<input id="modulepreq_txt' . $a->id . '" type="text" name="modulepreq_txt' . $a->id . '" value="' . $a->modulepreq . '" style="display:none;">'
+		.'<input id="modulepreq_txt' . $a->id . '" type="text" name="modulepreq_txt' . $a->id . '" value="' . $a->modulepreq . '" style="display:none">'
 		.'<div style="float:left; margin: 0 3px;"><input class="editaddpreqbtn" modid="' . $a->id . '" id="editaddPreq' . $a->id . '" type="button" value="Add Prerequisite"></div>'
 		.'<div id="preq-list' . $a->id . '" class="preq-list" style="float:left; margin: 0 3px;"></div>'
 		.'</div></div>'
+		.'<br style="clear:both;" />'
 		.'<input id="updateid_txt' . $a->id . '" type="text" name="updateid_txt' . $a->id . '" style="display:none" value="' . $a->id . '">'
 		.'</div>'
+		.'<div style="margin-top: 8px;">'
+		.'<div class="input-module">'
+		.'<label for="editmodulecredit_txt' . $a->id . '">Module Credits: </label>';
+		
+	$temparray = array_fill(0, 12, '');
+	$temparray[$a->mc] = "selected";
+		
+	echo '<select id="editmodulecredit_txt' . $a->id . '">
+			<option value="0" '.$temparray[0].'>0</option>
+			<option value="1" '.$temparray[1].'>1</option>
+			<option value="2" '.$temparray[2].'>2</option>
+			<option value="3" '.$temparray[3].'>3</option>
+			<option value="4" '.$temparray[4].'>4</option>
+			<option value="5" '.$temparray[5].'>5</option>
+			<option value="6" '.$temparray[6].'>6</option>
+			<option value="8" '.$temparray[8].'>8</option>
+			<option value="12" '.$temparray[12].'>12</option>
+		</select>'
+		.'</div>'
+		.'<div class="input-module">';
+	
+	$temparray = array_fill(0, 11, '');
+	$temparray[$a->grade] = "selected";
+	
+	echo '<label for="editmodulegrade_txt' . $a->id . '">Grade: </label>
+		<select id="editmodulegrade_txt' . $a->id . '">
+			<option value="0" '.$temparray[0].'>N/A</option>
+			<option value="1" '.$temparray[1].'>A+</option>
+			<option value="2" '.$temparray[2].'>A</option>
+			<option value="3" '.$temparray[3].'>A-</option>
+			<option value="4" '.$temparray[4].'>B+</option>
+			<option value="5" '.$temparray[5].'>B</option>
+			<option value="6" '.$temparray[6].'>B-</option>
+			<option value="7" '.$temparray[7].'>C+</option>
+			<option value="8" '.$temparray[8].'>C</option>
+			<option value="9" '.$temparray[9].'>D+</option>
+			<option value="10" '.$temparray[10].'>D</option>
+			<option value="11" '.$temparray[11].'>F</option>
+		</select>'
+		.'</div>'
+		.'</div>'
 		.'<br style="clear:both;" />'
+		
+		.'<div style="margin-top: 8px;">'
+		.'<div class="input-module">'
+		.'<label for="editmodulereadyear_txt' . $a->id . '">Read module in: Year </label>';
+		
+	$temparray = array_fill(0, 4, '');
+	$temparray[$a->year] = "selected";
+		
+	echo '<select id="editmodulereadyear_txt' . $a->id . '">
+			<option value="0" '.$temparray[0].'>N/A</option>
+			<option value="1" '.$temparray[1].'>1</option>
+			<option value="2" '.$temparray[2].'>2</option>
+			<option value="3" '.$temparray[3].'>3</option>
+			<option value="4" '.$temparray[4].'>4</option>
+		</select>'
+		.'</div>'
+		.'<div class="input-module">';
+	
+	$temparray = array_fill(1, 2, '');
+	$temparray[$a->sem] = "selected";
+	
+	echo '<label for="editmodulereadsem_txt' . $a->id . '">Semester: </label>
+		<select id="editmodulereadsem_txt' . $a->id . '">
+			<option value="1" '.$temparray[1].'>1</option>
+			<option value="2" '.$temparray[2].'>2</option>
+		</select>'
+		.'</div>'
+		.'</div>'
+		.'<br style="clear:both;" />'
+		
 		.'<div class="input-module-submit"><input modid="' . $a->id . '" class="editmodulebtn" id="editmodulebtn' . $a->id . '" type="button" value="Update"></div></form>'
 		.'</div>';
 	

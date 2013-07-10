@@ -40,6 +40,88 @@ if (!isset($wpdb->moduledata)) {
 								
 								<p>
 								<script>
+								$(function() {
+									$( "#dialog" ).dialog({
+										width:'auto',
+										height:'auto',
+										autoOpen: false,
+										show: {
+										effect: "fade",
+										duration: 400
+										},
+										hide: {
+										effect: "explode",
+										duration: 400
+										}
+									});
+									$( "#modulePopUpDialog" ).dialog({
+										width:'auto',
+										height:'auto',
+										modal: true,
+										autoOpen: false,
+										show: {
+										effect: "fade",
+										duration: 400
+										},
+										hide: {
+										effect: "explode",
+										duration: 400
+										}
+									});
+								});
+								/*
+									Function to clear tooltip and prerequisite info
+								*/
+								function clearTooltip() {
+									$("#retreivedpreq").slideUp();
+									$('#modulepreq2_txt').prop('title', '');
+									$( "#dialog" ).dialog( "close" );
+								}
+								/*
+									Function to Get Module Info from NUSmods
+								*/
+								function getModuleInfo(str) {
+									var xmlhttp;
+									if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											//document.getElementById("widget-modulecount").innerHTML=xmlhttp.responseText;
+											var xmlDoc = $.parseXML( xmlhttp.responseText ),
+											$xml = $( xmlDoc );
+											if($xml.find( "title" ).text() != "") { 
+												$('#modulename_txt').val($xml.find( "title" ).text());
+												
+												if($xml.find( "preq" ).text() != "") {
+													$('#retreivedpreq').text('Retrevied data: ' + $xml.find( "preq" ).text());
+												} else {
+													$('#retreivedpreq').text('Retrevied data: Nil');
+												}
+												$('#modulepreq2_txt').prop('title', 'Copy the relavant prerequisite codes and add them here');
+												$("#modulepreq2_txt").tooltip();
+												$(".ui-tooltip").css('margin-top', "-10 px !important");
+												$('#retreivedpreq').slideDown();
+												$('#modulecredit_txt').val($xml.find( "mc" ).text());
+												$('#getModuleIvle').attr('src', 'http://ivle7.nus.edu.sg/lms/Account/NUSBulletin/msearch_view_full.aspx?modeCode='+$xml.find( "code" ).text().toLowerCase())
+												$( "#dialog" ).dialog( "open" );
+											} else {
+												alert('Unable to find module');
+											}
+											$("#loading-overlay").fadeOut(200, function(){
+												$("#loading-overlay").removeClass("loading-overlay");
+											});
+											$("#loading-overlay-message").fadeOut(200, function(){
+												$("#loading-overlay-message").removeClass("loading-overlay-message");
+											});
+										}
+									}
+									xmlhttp.open("GET","<?php echo get_home_url(); ?>/nusmods/?"+str,true);
+									xmlhttp.send();
+								}
 								/*
 									Function to Count Modules
 								*/
@@ -97,7 +179,7 @@ if (!isset($wpdb->moduledata)) {
 											});
 										}
 									}
-									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions/?"+str,true);
+									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions-2/?"+str,true);
 									xmlhttp.send();
 								}
 								/*
@@ -140,7 +222,7 @@ if (!isset($wpdb->moduledata)) {
 											});
 										}
 									}
-									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions/?"+str,true);
+									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-functions-2/?"+str,true);
 									xmlhttp.send();
 								}
 								/*
@@ -193,6 +275,7 @@ if (!isset($wpdb->moduledata)) {
 										flushModules("ur=<?php echo $username ?>&course="+course);
 									});
 									$("#loading").fadeIn();
+									$("html, body").animate({ scrollTop: 0 }, "slow");
 								};
 								/*
 									Function is called when the delete button on the module item is clicked.
@@ -204,6 +287,7 @@ if (!isset($wpdb->moduledata)) {
 										manageModule("op=delete&ur=<?php echo $username ?>&id="+id);
 									});
 									$("#loading").fadeIn();
+									$("html, body").animate({ scrollTop: 0 }, "slow");
 								};
 								/*
 									Function toggle the visibility of the edit plane embeded in the module item.
@@ -224,7 +308,18 @@ if (!isset($wpdb->moduledata)) {
 									}
 									xmlhttp.onreadystatechange=function() {
 										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											$('#modulePopUpContent').html(xmlhttp.responseText);
+											$('#modulePopUpDialog').dialog('open');
 											
+											// Clears the loading overlay animation
+											$("#loading-overlay").fadeOut(200, function(){
+												$("#loading-overlay").removeClass("loading-overlay");
+											});
+											$("#loading-overlay-message").fadeOut(200, function(){
+												$("#loading-overlay-message").removeClass("loading-overlay-message");
+											});
+											
+											/*
 											$("#popup-overlay-innermessage").html('<div style="padding: 10px;">'+xmlhttp.responseText+'</div>');
 											tempHeight = $("#popup-overlay-innermessage").height();
 											$("#popup-overlay-innermessage").css('display', 'none');
@@ -235,11 +330,20 @@ if (!isset($wpdb->moduledata)) {
 													height: tempHeight+'px',
 												}, 1500 );
 											});
+											*/
 										}
 									}
 									xmlhttp.open("GET","<?php echo get_home_url(); ?>/module-popup/?ur=<?php echo $username ?>&mc="+modid,true);
 									xmlhttp.send();
 									
+									$('#modulePopUpDialog').dialog('option', 'title', modid);
+									
+									$("#loading-overlay").fadeIn(100);
+									$("#loading-overlay").addClass("loading-overlay");
+									$("#loading-overlay-message").fadeIn(100);
+									$("#loading-overlay-message").addClass("loading-overlay-message");
+									
+									/*
 									$("#popup-overlay").fadeIn();
 									$("#popup-overlay").addClass("popup-overlay");
 									$("#popup-overlay-container").fadeIn();
@@ -251,9 +355,10 @@ if (!isset($wpdb->moduledata)) {
 													+'<div id="popup-overlay-innermessage"></div>'
 													+'<div style="padding: 0 10px 10px 10px; text-align:right;">'
 													+'<a href="Javascript:removemodulepopup()">close window</a></div>');
+									*/
 								}
 								/*
-									Function to create pop up when module name is click
+									Function to remove pop up when module name is click
 								*/
 								function removemodulepopup() {
 									$("#popup-overlay").fadeOut(200, function(){
@@ -451,13 +556,23 @@ if (!isset($wpdb->moduledata)) {
 												manageModule("ur=<?php echo $username ?>&mc="+$("#modulecode_txt").val()
 													+"&op=insert"
 													+"&mn="+$("#modulename_txt").val()
-													+"&preq="+$("#modulepreq_txt").val());
-													$("#loading").fadeIn();
-													$("#modulecode_txt").val("");
-													$("#modulename_txt").val("");
-													$("#modulepreq_txt").val("");
-													$("#modulepreq2_txt").val("");
-													$("#preq-list").html("");
+													+"&preq="+$("#modulepreq_txt").val()
+													+"&credit="+$("#modulecredit_txt option:selected").val()
+													+"&grade="+$("#modulegrade_txt option:selected").index()
+													+"&yr="+$("#modulereadyear_txt option:selected").val()
+													+"&sem="+$("#modulereadsem_txt option:selected").val()
+												);
+												clearTooltip();
+												$("#loading").fadeIn();
+												$("#modulecode_txt").val("");
+												$("#modulename_txt").val("");
+												$("#modulepreq_txt").val("");
+												$("#modulepreq2_txt").val("");
+												$("#modulecredit_txt option:eq(0)").prop('selected', true);
+												$("#modulegrade_txt option:eq(0)").prop('selected', true);
+												$("#modulereadyear_txt option:eq(0)").prop('selected', true);
+												$("#modulereadsem_txt option:eq(0)").prop('selected', true);
+												$("#preq-list").html("");
 											});
 										} else {
 											// form validation
@@ -537,7 +652,12 @@ if (!isset($wpdb->moduledata)) {
 												+"&op=update"
 												+"&mn="+$("#editmodulename_txt"+id).val()
 												+"&preq="+$("#modulepreq_txt"+id).val()
-												+"&id="+id);
+												+"&id="+id
+												+"&credit="+$("#editmodulecredit_txt"+id+" option:selected").val()
+												+"&grade="+$("#editmodulegrade_txt"+id+" option:selected").index()
+												+"&yr="+$("#editmodulereadyear_txt"+id+" option:selected").val()
+												+"&sem="+$("#editmodulereadsem_txt"+id+" option:selected").val()
+											);
 										});
 										$("#loading").fadeIn();
 									});
@@ -581,12 +701,14 @@ if (!isset($wpdb->moduledata)) {
 												+"&order="+$("#sortby").val().toLowerCase().replace(/ /g, ''));
 										});
 										$("#loading").fadeIn();
+										$("html, body").animate({ scrollTop: 0 }, "slow");
 									});
 									/*
 										Attach a click listener to the filter button.
 									*/
 									$("#filter_btn").click(function() {
 										filterModules();
+										$("html, body").animate({ scrollTop: 0 }, "slow");
 									});
 									/*
 										Attach a click listener to the filter button.
@@ -594,26 +716,107 @@ if (!isset($wpdb->moduledata)) {
 									$("#clearfilter_btn").click(function() {
 										clearModuleFilters();
 									});
+									/* 
+										Retrevie module info from NUSmods
+									*/
+									$("#getModInfo").click(function(){
+										if ( $("#modulecode_txt").val() == "") {
+											// textbox empty
+											$("#modulecode_txt").focus();
+											$("#modulecode_txt").effect('shake');
+										} else {
+											getModuleInfo(
+												"mc=" + $("#modulecode_txt").val().toUpperCase()
+											);
+											clearTooltip();
+											$("#loading-overlay").fadeIn(100);
+											$("#loading-overlay").addClass("loading-overlay");
+											$("#loading-overlay-message").fadeIn(100);
+											$("#loading-overlay-message").addClass("loading-overlay-message");											
+										}
+									});
 								});
 								</script>
+								
 								<form name="input" action="<?php echo the_permalink() ?>" method="get">
 									<div>
-										<div class="input-module"><div>Module code: </div><div><input id="modulecode_txt" type="text" name="modulecode_txt"></div></div>
-										<div class="input-module"><div>Module name: </div><div><input id="modulename_txt" type="text" name="modulename_txt"></div></div>
+										<div class="input-module"><div><strong>Module code: </strong></div>
+											<div style="float:left; margin-right: 4px;"><input id="modulecode_txt" type="text" name="modulecode_txt"></div>
+											<div style="float:left;"><input id="getModInfo" type="button" value="Get Module Info"></div>
+										</div>
+									</div>
+									<br style="clear:both;" />
+									<div>
+										<div class="input-module"><div><strong>Module name: </strong></div><div><input id="modulename_txt" type="text" name="modulename_txt"></div></div>
 									</div>
 									<br style="clear:both;" />
 									<div>
 										<div class="input-module">
-										<div>Module Prerequisite: </div>
+										<div><strong>Module Prerequisite: </strong></div>
+										<div id="retreivedpreq"></div>
 										<div>
 											<div style="float:left;"><input id="modulepreq2_txt" type="text" name="modulepreq2_txt"></div>
 											<input id="modulepreq_txt" type="text" name="modulepreq_txt" style="display:none">
-											<div style="float:left; margin: 0 3px;"><input id="addPreq" type="button" value="Add Prerequisite"></div>
+											<div style="float:left; margin: 0 4px;"><input id="addPreq" type="button" value="Add Prerequisite"></div>
 											<div id="preq-list" class="preq-list" style="float:left; margin: 0 3px;"></div>
 										</div>
 										</div>
 									</div>
-									<br />
+									<br style="clear:both;" />
+									<div style="margin-top: 8px;">
+										<div class="input-module">
+											<label for="modulecredit_txt"><strong>Modular Credits: </strong></label>
+											<select id="modulecredit_txt">
+												<option value="0">0</option>
+												<option value="1">1</option>
+												<option value="2">2</option>
+												<option value="3">3</option>
+												<option value="4">4</option>
+												<option value="5">5</option>
+												<option value="6">6</option>
+												<option value="8">8</option>
+												<option value="12">12</option>
+											</select>
+										</div>
+										<div class="input-module">
+											<label for="modulegrade_txt"><strong>Grade: </strong></label>
+											<select id="modulegrade_txt">
+												<option value="0">N/A</option>
+												<option value="1">A+</option>
+												<option value="2">A</option>
+												<option value="3">A-</option>
+												<option value="4">B+</option>
+												<option value="5">B</option>
+												<option value="6">B-</option>
+												<option value="7">C+</option>
+												<option value="8">C</option>
+												<option value="9">D+</option>
+												<option value="10">D</option>
+												<option value="11">F</option>
+											</select>
+										</div>
+									</div>
+									<br style="clear:both;" />
+									<div style="margin-top: 8px;">
+										<div class="input-module">
+											<label for="modulereadyear_txt"><strong>Read module in: </strong>Year </label>
+											<select id="modulereadyear_txt">
+												<option value="0">N/A</option>
+												<option value="1">1</option>
+												<option value="2">2</option>
+												<option value="3">3</option>
+												<option value="4">4</option>
+											</select>
+										</div>
+										<div class="input-module">
+											<label for="modulereadsem_txt">Semester</label>
+											<select id="modulereadsem_txt">
+												<option value="1">1</option>
+												<option value="2">2</option>
+											</select>
+										</div>
+									</div>
+									<br style="clear:both;" />
 									<div class="input-module-submit">
 										<input id="insertModBtn" type="button" value="Add New Module">
 										<div id="testdiv"></div>
@@ -625,6 +828,15 @@ if (!isset($wpdb->moduledata)) {
 								<div class="module-colorcode module-available">Module Available</div>
 								<div class="module-colorcode">Module Locked</div>
 								<div style="clear:both"></div>
+								
+								<!-- Dialog Boxes -->
+								<div id="dialog" title="Module Info">
+									<iframe id="getModuleIvle" frameborder="0"></iframe>
+								</div>
+								<div id="modulePopUpDialog">
+									<div id="modulePopUpContent"></div>
+								</div>
+								<!-- End Dialog Boxes -->
 								</p>
 								
 								<?php
@@ -653,7 +865,20 @@ if (!isset($wpdb->moduledata)) {
 									
 									// count the modules
 									$user_count = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}'" );
+									$lvl_count = $wpdb->get_var( "SELECT SUM($wpdb->moduledata.mc) FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.level='1'" );
+									$mc_count = $wpdb->get_var( "SELECT SUM($wpdb->moduledata.mc) FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}'" );
 									//echo "<p>Total Module Count: {$user_count}</p>";
+									
+									// Calculate CAP 
+									$query = $wpdb->prepare( "SELECT $wpdb->moduledata.mc, $wpdb->moduledata.grade FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.mc!=0 AND $wpdb->moduledata.grade!=0");
+									$rawmodule = $wpdb->get_results( $query );
+									$totalmccap = 0.00; $tempsum = 0.00; $cumulativecap = number_format((float)0.00, 2, '.', '');
+									$gradearray = array(0, 5.0, 4.5, 4.5, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0);
+									foreach($rawmodule as $a) {
+										$totalmccap += $a->mc;
+										$tempsum += ($a->mc)*($gradearray[$a->grade]);
+									}
+									if($tempsum > 0) {$cumulativecap = number_format((float)$tempsum/$totalmccap, 2, '.', '');}
 									
 									// Retreive all modules tagged with this user
 									$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.{$moduleorder}" );
@@ -736,7 +961,61 @@ if (!isset($wpdb->moduledata)) {
 											.'<div style="float:left; margin: 0 3px;"><input class="editaddpreqbtn" modid="' . $a->id . '" id="editaddPreq' . $a->id . '" type="button" value="Add Prerequisite"></div>'
 											.'<div id="preq-list' . $a->id . '" class="preq-list" style="float:left; margin: 0 3px;"></div>'
 											.'</div></div>'
+											.'<br style="clear:both;" />'
 											.'<input id="updateid_txt' . $a->id . '" type="text" name="updateid_txt' . $a->id . '" style="display:none" value="' . $a->id . '">'
+											.'</div>'
+											.'<div style="margin-top: 8px;">'
+											.'<div class="input-module">'
+											.'<label for="editmodulecredit_txt' . $a->id . '">Module Credits: </label>
+											<select id="editmodulecredit_txt' . $a->id . '">
+												<option value="0">0</option>
+												<option value="1">1</option>
+												<option value="2">2</option>
+												<option value="3">3</option>
+												<option value="4">4</option>
+												<option value="5">5</option>
+												<option value="6">6</option>
+												<option value="8">8</option>
+												<option value="12">12</option>
+											</select><script>$("#editmodulecredit_txt' . $a->id . '").val("'.$a->mc.'");</script>'
+											.'</div>'
+											.'<div class="input-module">'
+											.'<label for="editmodulegrade_txt' . $a->id . '">Grade: </label>
+											<select id="editmodulegrade_txt' . $a->id . '">
+												<option value="0">N/A</option>
+												<option value="1">A+</option>
+												<option value="2">A</option>
+												<option value="3">A-</option>
+												<option value="4">B+</option>
+												<option value="5">B</option>
+												<option value="6">B-</option>
+												<option value="7">C+</option>
+												<option value="8">C</option>
+												<option value="9">D+</option>
+												<option value="10">D</option>
+												<option value="11">F</option>
+											</select><script>$("#editmodulegrade_txt' . $a->id . '").prop("selectedIndex", '.$a->grade.');</script>'
+											.'</div>'
+											.'</div>'
+											.'<br style="clear:both;" />'
+											.'<div style="margin-top: 8px;">'
+											.'<div class="input-module">'
+											.'<label for="editmodulereadyear_txt' . $a->id . '">Read module in: Year </label>
+											<select id="editmodulereadyear_txt' . $a->id . '">
+												<option value="0">N/A</option>
+												<option value="1">1</option>
+												<option value="2">2</option>
+												<option value="3">3</option>
+												<option value="4">4</option>
+											</select><script>$("#editmodulereadyear_txt' . $a->id . '").val("'.$a->year.'");</script>'
+											.'</div>'
+											.'<div class="input-module">'
+											.'<label for="editmodulereadsem_txt' . $a->id . '">Semester </label>
+											<select id="editmodulereadsem_txt' . $a->id . '">
+												<option value="1">1</option>
+												<option value="2">2</option>
+											</select><script>$("#editmodulereadsem_txt' . $a->id . '").val("'.$a->sem.'");</script>'
+											.'</div>'
 											.'</div>'
 											.'<br style="clear:both;" />'
 											.'<div class="input-module-submit"><input modid="' . $a->id . '" class="editmodulebtn" id="editmodulebtn' . $a->id . '" type="button" value="Update"></div></form>'
@@ -783,7 +1062,10 @@ if (!isset($wpdb->moduledata)) {
 							<div class="widget">
 								<h4 class="widgettitle"><span class="lwa-title">Stats</span></h4>
 								<div id="widget-modulecount">
-									Total Module Count: <?php echo $user_count ?>
+									Total Module Count: <?php echo $user_count ?><br />
+									Level 1 MC Count: <?php echo $lvl_count ?><br />
+									Total MC Count: <?php echo $mc_count ?><br />
+									Cumulative CAP: <?php echo $cumulativecap ?>
 								</div>
 							</div>
 							<div class="widget">
@@ -836,7 +1118,10 @@ if (!isset($wpdb->moduledata)) {
 								<div>
 									Clears all modules in account and loads in a template structure of the selected course.
 									<ul>
+										<li><a id="cmrequirements_btn" href="JavaScript:flushModuleBtn('cmrequirements')">Communications and Media</a></li>
 										<li><a id="csrequirements_btn" href="JavaScript:flushModuleBtn('csrequirements')">Computer Science</a></li>
+										<li><a id="isrequirements_btn" href="JavaScript:flushModuleBtn('isrequirements')">Information Systems</a></li>
+										<li><a id="ecrequirements_btn" href="JavaScript:flushModuleBtn('ecrequirements')">Electronic Commerce</a></li>
 									</ul>
 								</div>
 							</div>

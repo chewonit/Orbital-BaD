@@ -23,6 +23,8 @@ $output = '';
 $query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}'" );
 $rawmodule = $wpdb->get_results( $query );
 
+$gradearray = array('N/A', 'A+','A','A-','B+','B','B-','C+','C','D+','D','F');
+
 foreach($rawmodule as $a) {
 	if($a->istaken) {
 		$statusremark = $a->modulecode . " has already been cleared.";
@@ -41,8 +43,16 @@ foreach($rawmodule as $a) {
 	}
 		
 	$output .= '<div class="popup-module-container '.$classstyle.'"><div><strong>' . $a->modulecode . ': ' . $a->modulename . '</strong></div>'
+		.'<div>Status: ' . $statusremark . '</div>'
 		.'<div>level: ' . $a->level . '000</div>'
-		.'<div>Status: ' . $statusremark . '</div></div>';
+		.'<div>MC: ' . $a->mc . '</div>'
+		.'<div>Grade: ' . $gradearray[$a->grade] . '</div>';
+		
+	if($a->year != 0) {
+		$output .= '<div>Read module in: Year ' . $a->year . ' Sem ' . $a->sem . '</div>';
+	}
+			
+	$output .= '</div>';
 	$output .= '<div class="popup-module-container"><div><strong>Prerequisites</strong></div>';
 
 	if($a->modulepreq==null) {

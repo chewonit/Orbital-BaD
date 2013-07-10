@@ -12,7 +12,17 @@ if (!isset($wpdb->moduledata)) {
 if(isset($_GET["ur"])) { $username=$_GET["ur"]; }
 	else { wp_redirect( get_home_url() ."/error" ); exit;}
 if(isset($_GET["course"])) { $course=$_GET["course"]; }
-$output = '<div style="color:red">Account flushed and course module template structure loaded in</div>';
+
+$courseArray = array(
+	"cmrequirements" => "Communications and Media",
+    "csrequirements" => "Computer Science",
+	"isrequirements" => "Information Systems",
+	"ecrequirements" => "Electronic Commerce",
+);
+
+$output = '<div style="color:red">Account flushed and '.$courseArray[$course].' module template structure loaded in.<br />'
+	.'Please note that only core modules have been added in.<br />'
+	.'Project, electives and modules with options (i.e. Science Modules) have been omitted.</div>';
 ob_start();
 $wpdb->query( 
 	$wpdb->prepare( 
@@ -33,277 +43,6 @@ $wpdb->query(
 			$course
 	)
 );
-/*
-function my_ofset($text){
-    preg_match('/^\D*(?=\d)/', $text, $m);
-    return strlen($m[0]);
-}
-if($operation == "checkModule") { 
-	if($checkValue) {
-		$wpdb->update( 
-			'wp_moduledata',
-			array(
-				'isTaken' => $checkValue
-			),
-			array( 'id' => $id ),
-			array( 
-				'%d'
-			), 
-			array( '%d' ) 
-		);
-		$output = $id . ",istaken"; // Module has been marked as Taken.
-		
-		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
-		$modulecodeArr = $wpdb->get_results( $query );
-		$modulecode = $modulecodeArr[0]->modulecode;
-		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$modulecode}'" );
-		$rawmodule = $wpdb->get_results( $query );
-		
-		foreach($rawmodule as $a) {
-			//echo $a->modulecode;
-			$flag = true;
-			$arr = explode(",", $a->modulepreq);
-			foreach($arr as $module) {
-				if (!($wpdb->get_var( "SELECT $wpdb->moduledata.istaken FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ))) {
-					$flag = false;
-					break;
-				}
-			}
-			// This module is now unlocked
-			if($flag) {
-				$wpdb->update( 
-					'wp_moduledata',
-					array(
-						'status' => 'available'
-					),
-					array( 'id' => $a->id ),
-					array( 
-						'%s'
-					), 
-					array( '%d' ) 
-				);
-				$output = $output . "," . $a->id . ",available";
-			}
-		}
-	} else {
-		$flag = true;
-		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
-		$modulecodeArr = $wpdb->get_results( $query );
-		$modulecode = $modulecodeArr[0]->modulecode;
-		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$modulecode}'" );
-		$rawmodule = $wpdb->get_results( $query );
-		
-		foreach($rawmodule as $a) {
-			// This array contains the modules that has the target module as prerequisite
-			if ($a->istaken) {
-				$flag = false;
-				break;
-			}
-		}
-		if($flag) {
-			$wpdb->update( 
-				'wp_moduledata',
-				array(
-					'isTaken' => $checkValue
-				),
-				array( 'id' => $id ),
-				array( 
-					'%d'
-				), 
-				array( '%d' ) 
-			);
-		
-			$output = $id . ",available"; // Module has been marked as Not Taken.
-			
-			foreach($rawmodule as $a) {
-				$wpdb->update( 
-					'wp_moduledata',
-					array(
-						'status' => 'locked'
-					),
-					array( 'id' => $a->id ),
-					array( 
-						'%s'
-					), 
-					array( '%d' ) 
-				);
-				$output = $output . "," . $a->id . ",locked";
-			}
-		} else {
-			$output = "1=" . $id;
-		}
-	}
-	
-	echo $output;
-	return;
-}
-if($operation == "delete") { 
-	$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
-	$modulecodeArr = $wpdb->get_results( $query );
-	$modulecode = $modulecodeArr[0]->modulecode;
-	$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$modulecode}'" );
-	$rawmodule = $wpdb->get_results( $query );
-	if(count($rawmodule) == 0) {
-		$wpdb->query( 
-			$wpdb->prepare( 
-				"
-				DELETE FROM $wpdb->moduledata
-				WHERE id = %d
-				",
-					$id
-			)
-		);
-		$output = '<div style="color:red">Module Deleted.</div>';
-	} else {
-		$output = '<div style="color:red">';
-		for ($i = 0; $i < count($rawmodule); $i++) {
-			if($i == (count($rawmodule)-1)) {
-				$output = $output . $rawmodule[$i]->modulecode . " ";
-				break;
-			}
-			$output = $output . $rawmodule[$i]->modulecode . ", ";
-		}
-		$output = $output . "has " . $modulecode . " as a prerequisite!<br />Unable to delete module.</div>";
-	}
-}
-if($operation == "insert") {
-	$level = $modulecode[my_ofset($modulecode)];
-	$dupe = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}'" );
-	$missingpreq = "noModule";
-	$status = "available";
-	if($modulepreq == null) {
-		$status="available";
-	} else {		
-		$arr = explode(",", $modulepreq);
-		foreach($arr as $module) {
-			if ($wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ) == "0") {
-				// Prerequisite Not in the user module pool
-				$missingpreq = $module;
-				break;
-			} else {
-				if (!($wpdb->get_var( "SELECT $wpdb->moduledata.istaken FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ))) {
-					// if prerequisite module is not taken yet
-					$status = "locked";
-					break;
-				}
-			}
-		}
-	}
-	if($dupe == 0 && $missingpreq=="noModule") {
-		$wpdb->insert( 
-			'wp_moduledata', 
-			array( 
-				'username' => $username, 
-				'modulecode' => strtoupper($modulecode),
-				'modulename' => ucwords(strtolower($modulename)),
-				'modulepreq' => strtoupper($modulepreq),
-				'level' => $level,
-				'status' => $status
-			), 
-			array( 
-				'%s', 
-				'%s',
-				'%s',
-				'%s',
-				'%d',
-				'%s'
-			) 
-		);
-		$output = '<div style="color:red">Module Added.</div>';
-	} else if($missingpreq != "noModule") {
-		$output = '<div style="color:red">Cannot find prerequisite module!</div><div style="color:red">Create module '. $missingpreq .' first!</div>';
-	} else {
-		$output = '<div style="color:red">A entry with the same Module Code already exist!</div><div style="color:red">No changes mande</div>';
-	}
-}
-if($operation == "update") {
-
-	$modulecodeflag = false;
-	$missingpreq = "noModule";
-	$status = "available";
-	
-	$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.id='{$id}'" );
-	$modulecodeArr = $wpdb->get_results( $query );
-	$originalmodulecode = $modulecodeArr[0]->modulecode;
-	
-	if(strcasecmp($originalmodulecode, $modulecode)!=0) {
-		// Module code has been changed
-		// Check if there exist and module containing this as a prerequisite
-		$query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.modulepreq REGEXP '{$originalmodulecode}'" );
-		$rawmodule = $wpdb->get_results( $query );
-		
-		if(count($rawmodule) != 0) {
-			$output = '<div style="color:red">';
-			for ($i = 0; $i < count($rawmodule); $i++) {
-				if($i == (count($rawmodule)-1)) {
-					$output = $output . $rawmodule[$i]->modulecode . " ";
-					break;
-				}
-				$output = $output . $rawmodule[$i]->modulecode . ", ";
-			}
-			$output = $output . "has " . $originalmodulecode . " as a prerequisite!<br />Unable to edit module.</div>";
-			$modulecodeflag = false;
-		} else {
-			// There is no module containing this as a prerequisite
-			// Safe to cahnge module name
-			$modulecodeflag = true;
-		}
-	} else {
-		// Module code has NOT been changed
-		$modulecodeflag = true;
-	}
-	
-	if($modulecodeflag) {
-		if($modulepreq != null) {
-			$arr = explode(",", $modulepreq);
-			foreach($arr as $module) {
-				if ($wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ) == "0") {
-					// Prerequisite Not in the user module pool
-					$missingpreq = $module;
-					break;
-				} else {
-					if (!($wpdb->get_var( "SELECT $wpdb->moduledata.istaken FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$module}' AND $wpdb->moduledata.username='{$username}'" ))) {
-						// if prerequisite module is not taken yet
-						$status = "locked";
-						break;
-					}
-				}
-			}
-		} else {
-			$status="available";
-		}
-		
-		$level = $modulecode[my_ofset($modulecode)];
-		$dupe = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.modulecode='{$modulecode}' AND $wpdb->moduledata.username='{$username}' AND $wpdb->moduledata.id !={$id}" );
-		if($dupe == 0 && $missingpreq=="noModule") {
-			$wpdb->update( 
-				'wp_moduledata',
-				array(
-					'modulecode' => $modulecode,
-					'modulename' => ucwords(strtolower($modulename)),
-					'modulepreq' => strtoupper($modulepreq),
-					'level' => $level,
-					'status' => $status
-				),
-				array( 'id' => $id ),
-				array( 
-					'%s',
-					'%s',
-					'%s',
-					'%d',
-					'%s'
-				), 
-				array( '%d' ) 
-			);
-			$output = '<div style="color:red">Module Updated.</div>';
-		} else if($missingpreq != "noModule") {
-			$output = '<div style="color:red">Cannot find prerequisite module!</div><div style="color:red">Create module '. $missingpreq .' first!</div>';
-		} else {
-			$output = '<div style="color:red">A entry with the same Module Code already exist!</div><div style="color:red">No changes mande</div>';
-		}
-	}
-}
-*/
 // get user preference for module order
 if (!isset($wpdb->usermoduledata)) {
 	$wpdb->usermoduledata = $table_prefix . 'usermoduledata';
@@ -338,10 +77,6 @@ echo $output;
 
 echo '<div id="module-list">';
 
-// count the modules
-$user_count = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}'" );
-echo "<p>Total Module Count: {$user_count}</p>";
-
 // Retreive all modules tagged with this user
 $query = $wpdb->prepare( "SELECT * FROM $wpdb->moduledata WHERE $wpdb->moduledata.username='{$username}' ORDER BY $wpdb->moduledata.{$moduleorder}" );
 $rawmodule = $wpdb->get_results( $query );
@@ -362,7 +97,8 @@ foreach($rawmodule as $a) {
 		echo '<div id="module-item'. $a->id .'" class="module-item"><div>';
 	}
 	echo '<div style="float:left">';
-	print_r('<div style="font-weight:bold;">' . $a->modulecode . ": " . $a->modulename . "</div>");
+	print_r('<div style="font-weight:bold;"><a href="Javascript:modulepopup(\''. $a->modulecode .'\')">' 
+		. $a->modulecode . ": " . $a->modulename . "</a></div>");
 	// More module details
 	echo '<div style="float:left; margin-right:10px;">Level: '. $a->level .'000</div>'
 		.'<div style="float:left">Prerequisite: '. $preq . '</div>';
@@ -404,10 +140,10 @@ foreach($rawmodule as $a) {
 	
 	echo '</div>';
 	// -- End of Manage module buttons container
-
+									
 	echo "<br style='clear:both;'/></div>";
 	
-	echo '<div class="edit-box" id="edit' . $a->id . '" modid="' . $a->id . '" style="margin: 10px; background-color:white; display:none;">'
+	echo '<div class="edit-box" id="edit' . $a->id . '" modid="' . $a->id . '">'
 		.'<form name="input" action="'. get_permalink() .'" method="get">'
 		.'<div>'
 		.'<div class="input-module"><div>Module code: </div><div><input id="editmodulecode_txt' . $a->id . '" type="text" name="editmodulecode_txt' . $a->id . '" value="' . $a->modulecode . '"></div></div>'
@@ -418,13 +154,85 @@ foreach($rawmodule as $a) {
 		.'<div class="input-module"><div>Module Prerequisite: </div>'
 		.'<div>'
 		.'<div style="float:left;"><input id="modulepreq2_txt' . $a->id . '" type="text" name="modulepreq2_txt' . $a->id . '"></div>'
-		.'<input id="modulepreq_txt' . $a->id . '" type="text" name="modulepreq_txt' . $a->id . '" value="' . $a->modulepreq . '" style="display:none;">'
+		.'<input id="modulepreq_txt' . $a->id . '" type="text" name="modulepreq_txt' . $a->id . '" value="' . $a->modulepreq . '" style="display:none">'
 		.'<div style="float:left; margin: 0 3px;"><input class="editaddpreqbtn" modid="' . $a->id . '" id="editaddPreq' . $a->id . '" type="button" value="Add Prerequisite"></div>'
 		.'<div id="preq-list' . $a->id . '" class="preq-list" style="float:left; margin: 0 3px;"></div>'
 		.'</div></div>'
+		.'<br style="clear:both;" />'
 		.'<input id="updateid_txt' . $a->id . '" type="text" name="updateid_txt' . $a->id . '" style="display:none" value="' . $a->id . '">'
 		.'</div>'
+		.'<div style="margin-top: 8px;">'
+		.'<div class="input-module">'
+		.'<label for="editmodulecredit_txt' . $a->id . '">Module Credits: </label>';
+		
+	$temparray = array_fill(0, 12, '');
+	$temparray[$a->mc] = "selected";
+		
+	echo '<select id="editmodulecredit_txt' . $a->id . '">
+			<option value="0" '.$temparray[0].'>0</option>
+			<option value="1" '.$temparray[1].'>1</option>
+			<option value="2" '.$temparray[2].'>2</option>
+			<option value="3" '.$temparray[3].'>3</option>
+			<option value="4" '.$temparray[4].'>4</option>
+			<option value="5" '.$temparray[5].'>5</option>
+			<option value="6" '.$temparray[6].'>6</option>
+			<option value="8" '.$temparray[8].'>8</option>
+			<option value="12" '.$temparray[12].'>12</option>
+		</select>'
+		.'</div>'
+		.'<div class="input-module">';
+	
+	$temparray = array_fill(0, 11, '');
+	$temparray[$a->grade] = "selected";
+	
+	echo '<label for="editmodulegrade_txt' . $a->id . '">Grade: </label>
+		<select id="editmodulegrade_txt' . $a->id . '">
+			<option value="0" '.$temparray[0].'>N/A</option>
+			<option value="1" '.$temparray[1].'>A+</option>
+			<option value="2" '.$temparray[2].'>A</option>
+			<option value="3" '.$temparray[3].'>A-</option>
+			<option value="4" '.$temparray[4].'>B+</option>
+			<option value="5" '.$temparray[5].'>B</option>
+			<option value="6" '.$temparray[6].'>B-</option>
+			<option value="7" '.$temparray[7].'>C+</option>
+			<option value="8" '.$temparray[8].'>C</option>
+			<option value="9" '.$temparray[9].'>D+</option>
+			<option value="10" '.$temparray[10].'>D</option>
+			<option value="11" '.$temparray[11].'>F</option>
+		</select>'
+		.'</div>'
+		.'</div>'
 		.'<br style="clear:both;" />'
+		
+		.'<div style="margin-top: 8px;">'
+		.'<div class="input-module">'
+		.'<label for="editmodulereadyear_txt' . $a->id . '">Read module in: Year </label>';
+		
+	$temparray = array_fill(0, 4, '');
+	$temparray[$a->year] = "selected";
+		
+	echo '<select id="editmodulereadyear_txt' . $a->id . '">
+			<option value="0" '.$temparray[0].'>N/A</option>
+			<option value="1" '.$temparray[1].'>1</option>
+			<option value="2" '.$temparray[2].'>2</option>
+			<option value="3" '.$temparray[3].'>3</option>
+			<option value="4" '.$temparray[4].'>4</option>
+		</select>'
+		.'</div>'
+		.'<div class="input-module">';
+	
+	$temparray = array_fill(1, 2, '');
+	$temparray[$a->sem] = "selected";
+	
+	echo '<label for="editmodulereadsem_txt' . $a->id . '">Semester: </label>
+		<select id="editmodulereadsem_txt' . $a->id . '">
+			<option value="1" '.$temparray[1].'>1</option>
+			<option value="2" '.$temparray[2].'>2</option>
+		</select>'
+		.'</div>'
+		.'</div>'
+		.'<br style="clear:both;" />'
+		
 		.'<div class="input-module-submit"><input modid="' . $a->id . '" class="editmodulebtn" id="editmodulebtn' . $a->id . '" type="button" value="Update"></div></form>'
 		.'</div>';
 	
